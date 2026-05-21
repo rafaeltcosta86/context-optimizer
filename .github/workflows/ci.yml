@@ -1,0 +1,37 @@
+name: Sentinel / CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: Run tests and linters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate fixture structure
+        run: |
+          # Verify examples/before/ and examples/after/ are present (TDD fixture contract)
+          if [ ! -d "examples/before" ] || [ ! -d "examples/after" ]; then
+            echo "❌ Missing examples/before/ or examples/after/ — TDD fixture dirs required."
+            exit 1
+          fi
+          echo "✅ Fixture directories present."
+
+      - name: Validate skill file exists
+        run: |
+          if [ ! -f "skill/context-optimizer.md" ]; then
+            echo "❌ skill/context-optimizer.md not found."
+            exit 1
+          fi
+          echo "✅ Skill file present."
+
+      # Add test/lint/build steps here as the project matures (Phase 2+)
+      # - name: Run Linters
+      #   run: ...
+      # - name: Run Tests
+      #   run: ...
