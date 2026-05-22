@@ -20,30 +20,30 @@
 
 ## Board Identifiers (GitHub Projects)
 
-> ⚠️ **PENDING:** Board not yet created. Replace `{{PROJECT_ID}}` and `{{STATUS_FIELD_ID}}` with real values after creating the board and running `gh auth login --scopes project`.
+
 
 ```
-PROJECT_ID   = {{PROJECT_ID}}
-STATUS_FIELD = {{STATUS_FIELD_ID}}
+PROJECT_ID   = PVT_kwHODpFFL84BYb7Z
+STATUS_FIELD = PVTSSF_lAHODpFFL84BYb7ZzhTh0Rs
 REPO         = rafaeltcosta86/context-optimizer
 ```
 
 ## Column Option IDs
 
-> ⚠️ **PENDING:** Fill these IDs after board creation. Query with:
-> `gh api graphql -f query='{ node(id: "PROJECT_ID") { ... on ProjectV2 { fields(first:20) { nodes { ... on ProjectV2SingleSelectField { name options { id name } } } } } } }'`
+
+
 
 | Column | Option ID |
 |---|---|
-| 💡 Idea | `{{ID_IDEA}}` |
-| 🔍 Exploration | `{{ID_EXPLORATION}}` |
-| 🧠 Brainstorming | `{{ID_BRAINSTORMING}}` |
-| 📐 Detail Solution | `{{ID_DETAILING}}` |
-| ✅ Approval | `{{ID_APPROVAL}}` |
-| ⚙️ Development | `{{ID_DEVELOPMENT}}` |
-| 🧪 Testing | `{{ID_TESTING}}` |
-| 👁 Code Review / PR | `{{ID_CODE_REVIEW_PR}}` |
-| 🚀 Ready for Production | `{{ID_PRODUCTION}}` |
+| 💡 Idea | `4e814cdb` |
+| 🔍 Exploration | `9e8bb1be` |
+| 🧠 Brainstorming | `2d8116eb` |
+| 📐 Detail Solution | `105ee484` |
+| ✅ Approval | `aaa44150` |
+| ⚙️ Development | `caf4e19b` |
+| 🧪 Testing | `623e96cb` |
+| 👁 Code Review / PR | `73e5a0df` |
+| 🚀 Ready for Production | `19105874` |
 
 ## Agent × Phase Mapping
 
