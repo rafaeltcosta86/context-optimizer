@@ -115,9 +115,23 @@ npx create-agentic-pdlc --update
 - Never implement beyond the immediate scope of the issue.
 - Never create future-proofing abstractions for hypothetical features.
 - Never add or remove `stage:*` or `qa:*` labels manually. These are owned by GitHub Actions automation and the PM only.
+- **Labels reserved for the PM (human) ONLY — agent MUST NOT apply these under any circumstances:**
+  - `spec:approved` — triggers Jules dispatch + board card move to Development
+  - `qa:approved` — triggers board card move to Code Review / PR
+  - `qa:needs-work` — triggers rework loop
 - Never invoke the skill on itself recursively (do not run `context-optimizer` with the context-optimizer repo as target while developing it — use `examples/` fixtures instead).
 - Never auto-apply skill recommendations without explicit per-recommendation user approval.
 - Never write Phase 5 (implement) code before the Phase 1–4 read-only phases complete and user consents.
+
+## Capability Tests (board automation smoke tests)
+
+When verifying board automation without shipping a real feature:
+
+1. Create the test issue. Observe it appears in the Idea column — this verifies `Add to Board on Open`.
+2. To test the `spec:approved → Development` flow: **ask the user (navigator) to add the label manually**. The agent must never add `spec:approved` on any issue, including test issues.
+3. After the user confirms the card moved: close the issue with `gh issue close <N> --reason "not planned" --comment "Capability test passed. Closing."`.
+4. Manually archive the card from the board via the GitHub Projects UI or `archiveProjectV2Item` GraphQL mutation.
+5. Strip any automation-added labels (`stage:development`, `agent:jules`, `agent:working`) using `gh issue edit <N> --remove-label`.
 
 ## Project Standards
 
