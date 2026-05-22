@@ -55,8 +55,8 @@ All v1.0 development of this skill MUST follow XP practices and TDD:
 
 ## What's In Flight
 
-- Phase 0 (PDLC framework install): in progress — board IDs pending PAT creation
-- Phase 1 (skill loads + scans): not started — awaits Phase 0 completion
+- Phase 0 (PDLC framework install): **complete** — board live, all workflows green, DoD-0.1–0.9 passed
+- Phase 1 (skill loads + scans): not started — ready to plan
 - All later phases: not started
 
 See the GitHub Project Board for the live kanban state.
