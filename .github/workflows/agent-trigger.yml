@@ -18,9 +18,9 @@ jobs:
       contents: read
     env:
       PROJECT_PAT: ${{ secrets.PROJECT_PAT }}
-      PROJECT_ID: "{{PROJECT_ID}}"
-      STATUS_FIELD_ID: "{{STATUS_FIELD_ID}}"
-      STATUS_DEVELOPMENT: "{{ID_DEVELOPMENT}}"
+      PROJECT_ID: "PVT_kwHODpFFL84BYb7Z"
+      STATUS_FIELD_ID: "PVTSSF_lAHODpFFL84BYb7ZzhTh0Rs"
+      STATUS_DEVELOPMENT: "caf4e19b"
     steps:
       - name: Update Labels
         uses: actions/github-script@v7
@@ -49,7 +49,7 @@ jobs:
             });
 
       - name: Move board card to Development
-        if: ${{ env.PROJECT_PAT != '' && env.PROJECT_ID != '{{PROJECT_ID}}' }}
+        if: ${{ env.PROJECT_PAT != '' }}
         continue-on-error: true
         uses: actions/github-script@v7
         with:

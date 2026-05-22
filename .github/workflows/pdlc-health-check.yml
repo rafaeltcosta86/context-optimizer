@@ -6,16 +6,16 @@ on:
     - cron: '0 8 * * 1' # Every Monday at 8am
 
 env:
-  PROJECT_ID: "{{PROJECT_ID}}"
-  STATUS_FIELD_ID: "{{STATUS_FIELD_ID}}"
-  STATUS_EXPLORATION: "{{ID_EXPLORATION}}"
-  STATUS_BRAINSTORMING: "{{ID_BRAINSTORMING}}"
-  STATUS_DETAILING: "{{ID_DETAILING}}"
-  STATUS_APPROVAL: "{{ID_APPROVAL}}"
-  STATUS_DEVELOPMENT: "{{ID_DEVELOPMENT}}"
-  STATUS_TESTING: "{{ID_TESTING}}"
-  STATUS_CODE_REVIEW_PR: "{{ID_CODE_REVIEW_PR}}"
-  STATUS_PRODUCTION: "{{ID_PRODUCTION}}"
+  PROJECT_ID: "PVT_kwHODpFFL84BYb7Z"
+  STATUS_FIELD_ID: "PVTSSF_lAHODpFFL84BYb7ZzhTh0Rs"
+  STATUS_EXPLORATION: "9e8bb1be"
+  STATUS_BRAINSTORMING: "2d8116eb"
+  STATUS_DETAILING: "105ee484"
+  STATUS_APPROVAL: "aaa44150"
+  STATUS_DEVELOPMENT: "caf4e19b"
+  STATUS_TESTING: "623e96cb"
+  STATUS_CODE_REVIEW_PR: "73e5a0df"
+  STATUS_PRODUCTION: "19105874"
 
 jobs:
   check-drift:
@@ -27,7 +27,7 @@ jobs:
       issues: write
     steps:
       - name: Validate Board Configuration
-        if: ${{ env.PROJECT_PAT != '' && env.PROJECT_ID != '{{PROJECT_ID}}' }}
+        if: ${{ env.PROJECT_PAT != '' }}
         uses: actions/github-script@v7
         with:
           github-token: ${{ env.PROJECT_PAT }}
