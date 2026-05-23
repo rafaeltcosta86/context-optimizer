@@ -45,7 +45,7 @@ jobs:
               owner,
               repo,
               issue_number,
-              labels: ['stage:development', 'agent:jules', 'agent:working']
+              labels: ['stage:development', 'jules', 'agent:working']
             });
 
       - name: Move board card to Development
