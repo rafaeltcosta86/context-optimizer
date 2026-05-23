@@ -29,7 +29,7 @@ Stub: Evaluating detected configurations against identity, workflow, in-flight, 
 Stub: Asking targeted clarifying questions only when information cannot be inferred from the scan.
 
 ### Phase 4 — RECOMMEND
-Stub: Generating prioritized recommendations with token cost and estimated savings.
+Stub: Generating prioritized recommendations with token cost, estimated savings, and mandatory Known Pattern mapping (or ad-hoc tagging).
 
 ### Phase 5 — IMPLEMENT
 Stub: Applying approved recommendations and producing a `context-spec.md` audit record.
