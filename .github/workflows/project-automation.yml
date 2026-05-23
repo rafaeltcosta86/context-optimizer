@@ -173,6 +173,12 @@ jobs:
                 const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: n });
                 await moveItem(issue.node_id);
                 console.log(`Issue #${n} → Testing`);
+
+                // Swap stage labels on the linked issue
+                for (const lbl of ['stage:development', 'stage:brainstorming', 'stage:detailing', 'stage:approval', 'jules', 'agent:working']) {
+                  await github.rest.issues.removeLabel({ owner, repo, issue_number: n, name: lbl }).catch(() => {});
+                }
+                await github.rest.issues.addLabels({ owner, repo, issue_number: n, labels: ['stage:testing'] }).catch(() => {});
               }
             } else {
               await moveItem(pr.node_id);
