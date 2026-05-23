@@ -32,4 +32,4 @@ Stub: Asking targeted clarifying questions only when information cannot be infer
 Stub: Generating prioritized recommendations with token cost, estimated savings, and mandatory Known Pattern mapping (or ad-hoc tagging).
 
 ### Phase 5 — IMPLEMENT
-Stub: Applying approved recommendations and producing a `context-spec.md` audit record.
+Stub: Applying approved recommendations via non-destructive merges (with cross-host caveats) and producing a context-spec.md audit record.
