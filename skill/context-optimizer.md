@@ -47,7 +47,7 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   If not a git repository, skip these steps and note "Not a git repository — git metadata steps skipped."
 
 6.  **Optionally query `gh` for in-flight state.** Only if `gh auth status` reports authenticated and project is a git repository:
-    *   Run `gh issue list --state open --label "stage:development" --json number,title --limit 5`.
+    *   Run `gh issue list --state open --json number,title --limit 5`.
     *   Run `gh pr list --state open --json number,title,headRefName --limit 5`.
     *   If `gh` is not authenticated or not installed, or project is not a git repository, skip and note "Skipped" or "no gh auth".
 
@@ -58,7 +58,7 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   GitHub Actions with sequential job dependencies (`needs:` chains): strong (3)
     *   Labels with stage prefix (`stage:`, `phase:`, `pipeline:`): strong (3)
     *   README mentions workflow / pipeline / stages: medium (2)
-    *   **Rule:** Total score ≥ 4 OR (≥ 1 strong signal AND ≥ 1 other signal) = recommend stage contracts.
+    *   **Rule:** Total score ≥ 4 = recommend stage contracts. (Note: strong=3pts, medium=2pts, weak=1pt — this is a weighted score, not a signal count. The weak-state threshold in Step 8 uses raw signal count, a separate metric.)
 
 8.  **Emit the Scan Report.** Produce a structured report delimited by `---SCAN-REPORT-START---` and `---SCAN-REPORT-END---`. The report MUST contain the following 7 sections:
     *   `## Detected Agent Platforms`: Status (✅/❌) and files found for Claude Code, Cursor, Gemini, and Cross-tool.
@@ -67,7 +67,7 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   `## Memory`: Status of memory files and count of entries.
     *   `## Git`: Branch name, recent activity, or "Not a git repository".
     *   `## In-Flight State`: List of active issues/PRs or "Skipped".
-    *   `## Stage Signals`: Table of detected signals and "Total signals" count. If signals < 3, include a warning about Phase 3 weak-state fallback.
+    *   `## Stage Signals`: Table of detected signals, their weights, total weighted score, and raw signal count. If raw signal count < 3, include a warning about Phase 3 weak-state fallback.
 
 ### Phase 2 — DIAGNOSE
 Stub: Evaluating detected configurations against identity, workflow, in-flight, startup, and duplication dimensions.
