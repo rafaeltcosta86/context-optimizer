@@ -1,34 +1,73 @@
 ---SCAN-REPORT-START---
 
-# Context Optimization Scan Report — my-hello-app
+# Scan Report — my-hello-app
 
-## Project Snapshot
-- Detected agents: none
-- Project type: npm
-- Scan signals: my-hello-app
-- Git status: Not a git repository
-- Total signals: 0
+**Scanned:** `examples/before/hello-fixture/`
+**Project type:** npm package (`package.json` → name: `my-hello-app`)
+**Summary:** A simple hello world CLI application.
 
-## Diagnosis Summary
-- Identity: present-weak
-- Workflow: missing
-- In-flight: missing
-- Startup: missing
-- Duplication: present-good
+---
 
-## Applied Recommendations
-- REC-001: Expand CLAUDE.md with Quick Start section
+## Detected Agent Platforms
 
-## Declined Recommendations
-- None
+| Platform | Status | Files found |
+|---|---|---|
+| Claude Code | ✅ present | `CLAUDE.md` (5 lines) |
+| Cursor | ❌ absent | `.cursorrules` — not found; `.cursor/rules/` — not found |
+| Gemini CLI / Antigravity | ❌ absent | `GEMINI.md` — not found; `.gemini/` — not found |
+| Cross-tool | ❌ absent | `AGENTS.md` — not found |
 
-## Out of Scope (Deliberately Not Touched)
-- Non-context files
+---
 
-## Known Patterns Referenced
-- layer-0-startup-guide
+## Context File Details
 
-## Ad-Hoc Recommendations
-- None
+### `CLAUDE.md` (5 lines)
+- Has startup section: **No**
+- Has workflow rules: **No**
+- Has invariants: **No**
+- Content: project name + 2-line description only
+
+---
+
+## Hooks
+
+| Hook | Status |
+|---|---|
+| `.claude/hooks/` | ❌ not found |
+| Global `~/.claude/hooks/session-start.sh` | ❌ not found |
+
+---
+
+## Memory
+
+- `~/.claude/projects/*/memory/MEMORY.md`: ❌ not found
+- Memory entries: 0
+
+---
+
+## Git
+
+**Not a git repository** — git metadata steps skipped.
+
+---
+
+## In-Flight State (gh)
+
+**Skipped** — project is not a git repository.
+
+---
+
+## Stage Signals
+
+| Signal type | Detected |
+|---|---|
+| Agent config with workflow rules | ❌ |
+| Stage-gate labels (gh) | skipped |
+| Sequential folders or numbered stages | ❌ |
+| Hook emitting in-flight state | ❌ |
+
+**Total signals: 0**
+
+> ⚠️ Signal count < 3 — Phase 3 will trigger the weak-state fallback (3-question dialog).
 
 ---SCAN-REPORT-END---

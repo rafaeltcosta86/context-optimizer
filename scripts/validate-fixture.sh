@@ -14,15 +14,15 @@ if [[ "$INPUT" != *"---SCAN-REPORT-END---"* ]]; then
     exit 1
 fi
 
-# Check for required sections
+# Check for required sections (Phase 1 Scan Report)
 SECTIONS=(
-    "## Project Snapshot"
-    "## Diagnosis Summary"
-    "## Applied Recommendations"
-    "## Declined Recommendations"
-    "## Out of Scope (Deliberately Not Touched)"
-    "## Known Patterns Referenced"
-    "## Ad-Hoc Recommendations"
+    "## Detected Agent Platforms"
+    "## Context File Details"
+    "## Hooks"
+    "## Memory"
+    "## Git"
+    "## In-Flight State"
+    "## Stage Signals"
 )
 
 for section in "${SECTIONS[@]}"; do
