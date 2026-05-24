@@ -22,7 +22,7 @@ jobs:
       STATUS_FIELD_ID: "PVTSSF_lAHODpFFL84BYb7ZzhTh0Rs"
       STATUS_DEVELOPMENT: "caf4e19b"
     steps:
-      - name: Update Labels
+      - name: Update stage labels
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -45,8 +45,21 @@ jobs:
               owner,
               repo,
               issue_number,
-              labels: ['stage:development', 'jules', 'agent:working']
+              labels: ['stage:development', 'agent:working']
             });
+
+      # jules label MUST be added via PROJECT_PAT, not GITHUB_TOKEN.
+      # GitHub anti-loop protection blocks external app webhooks (Jules) when
+      # events are triggered by GITHUB_TOKEN. PAT-triggered events fire normally.
+      - name: Add jules label via PAT
+        if: ${{ env.PROJECT_PAT != '' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ env.PROJECT_PAT }}
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.issue.number;
+            await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ['jules'] });
 
       - name: Move board card to Development
         if: ${{ env.PROJECT_PAT != '' }}
