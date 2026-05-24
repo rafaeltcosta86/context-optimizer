@@ -4,12 +4,12 @@
 INPUT=$(cat)
 
 # Check for delimiters
-if [[ ! "$INPUT" =~ "---SCAN-REPORT-START---" ]]; then
+if [[ "$INPUT" != *"---SCAN-REPORT-START---"* ]]; then
     echo "FAIL: Missing ---SCAN-REPORT-START---"
     exit 1
 fi
 
-if [[ ! "$INPUT" =~ "---SCAN-REPORT-END---" ]]; then
+if [[ "$INPUT" != *"---SCAN-REPORT-END---"* ]]; then
     echo "FAIL: Missing ---SCAN-REPORT-END---"
     exit 1
 fi
@@ -26,7 +26,7 @@ SECTIONS=(
 )
 
 for section in "${SECTIONS[@]}"; do
-    if [[ ! "$INPUT" =~ "$section" ]]; then
+    if [[ "$INPUT" != *"$section"* ]]; then
         echo "FAIL: Missing $section"
         exit 1
     fi
@@ -41,7 +41,7 @@ ASSERTIONS=(
 )
 
 for assertion in "${ASSERTIONS[@]}"; do
-    if [[ ! "$INPUT" =~ "$assertion" ]]; then
+    if [[ "$INPUT" != *"$assertion"* ]]; then
         echo "FAIL: Missing assertion: $assertion"
         exit 1
     fi
