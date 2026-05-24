@@ -1,0 +1,12 @@
+{
+  "name": "context-optimizer",
+  "version": "1.0.0",
+  "description": "Host-portable Claude Code skill — scan a project and recommend token-efficient context optimizations",
+  "scripts": {
+    "postinstall": "node scripts/install.js",
+    "test": "bash scripts/validate-fixture.sh < examples/after/hello-fixture-scan-report.md"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}
