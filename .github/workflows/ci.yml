@@ -31,7 +31,7 @@ jobs:
           echo "✅ Skill file present."
 
       - name: validate-fixture
-        if: false
+        if: true
         run: |
           bash scripts/validate-fixture.sh < examples/after/hello-fixture-scan-report.md
 
