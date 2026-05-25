@@ -41,17 +41,17 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 4.  **Read README.md (first 30 lines).** Extract project summary if no agent context file or manifest already provides it.
 
 5.  **Query git metadata via Bash:**
-    *   First, check if the current directory is a git root: `test -d "$PWD/.git" || test -f "$PWD/.git"`.
+    *   First, check if the current directory is a git root (defining the "git repository" status for the entire scan): `test -e .git`.
     *   If the check passes:
         *   Run `git rev-parse --abbrev-ref HEAD` (current branch).
         *   Run `git log --oneline -5` (recent activity).
         *   Run `git status --short` (uncommitted changes).
-    *   If the check fails (not a git repository), skip these steps and note "Not a git repository — git metadata steps skipped."
+    *   If the check fails, skip these steps and note "Not a git repository — git metadata steps skipped." The project is not a git repository for the purpose of all remaining steps.
 
-6.  **Optionally query `gh` for in-flight state.** Only if `gh auth status` reports authenticated and project is a git repository:
+6.  **Optionally query `gh` for in-flight state.** Only if the Step 5 `test -e .git` check passed AND `gh auth status` reports authenticated:
     *   Run `gh issue list --state open --json number,title --limit 5`.
     *   Run `gh pr list --state open --json number,title,headRefName --limit 5`.
-    *   If `gh` is not authenticated or not installed, or project is not a git repository, skip and note "Skipped" or "no gh auth".
+    *   If `gh` is not authenticated or not installed, or Step 5 check failed, skip and note "Skipped" or "no gh auth".
 
 7.  **Detect workflow / stage signals.** Apply the multi-signal heuristic:
     *   Numbered folders (`01-`, `02-`): weak (1)
