@@ -41,10 +41,12 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 4.  **Read README.md (first 30 lines).** Extract project summary if no agent context file or manifest already provides it.
 
 5.  **Query git metadata via Bash:**
-    *   Run `git rev-parse --abbrev-ref HEAD` (current branch).
-    *   Run `git log --oneline -5` (recent activity).
-    *   Run `git status --short` (uncommitted changes).
-    *   If not a git repository, skip these steps and note "Not a git repository — git metadata steps skipped."
+    *   First, check if the current directory is a git root: `test -d "$PWD/.git" || test -f "$PWD/.git"`.
+    *   If the check passes:
+        *   Run `git rev-parse --abbrev-ref HEAD` (current branch).
+        *   Run `git log --oneline -5` (recent activity).
+        *   Run `git status --short` (uncommitted changes).
+    *   If the check fails (not a git repository), skip these steps and note "Not a git repository — git metadata steps skipped."
 
 6.  **Optionally query `gh` for in-flight state.** Only if `gh auth status` reports authenticated and project is a git repository:
     *   Run `gh issue list --state open --json number,title --limit 5`.
