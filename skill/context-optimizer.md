@@ -60,14 +60,14 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   README mentions workflow / pipeline / stages: medium (2)
     *   **Rule:** Total score ≥ 4 = recommend stage contracts. (Note: strong=3pts, medium=2pts, weak=1pt — this is a weighted score, not a signal count. The weak-state threshold in Step 8 uses raw signal count, a separate metric.)
 
-8.  **Emit the Scan Report.** Produce a structured report delimited by `---SCAN-REPORT-START---` and `---SCAN-REPORT-END---`. The report MUST start with a `# Scan Report — {project name}` header, followed by these 7 mandatory sections:
+8.  **Emit the Scan Report.** Produce a structured report delimited by `---SCAN-REPORT-START---` and `---SCAN-REPORT-END---`. The report MUST start with a `# Scan Report — {project name}` header, followed by project metadata (Scanned path, Project type, and Summary), and then these 7 mandatory sections:
     *   `## Detected Agent Platforms`: Status (✅/❌) and files found for Claude Code, Cursor, Gemini, and Cross-tool.
     *   `## Context File Details`: Summary of each detected file (lines, sections present).
     *   `## Hooks`: Status of project and global hooks.
     *   `## Memory`: Status of memory files and count of entries.
     *   `## Git`: Branch name, recent activity, or "Not a git repository".
     *   `## In-Flight State`: List of active issues/PRs or "Skipped".
-    *   `## Stage Signals`: Table of detected signals, their weights, and a final summary line using the format: **Total signals: {N}**. If N < 3, include a warning about Phase 3 weak-state fallback.
+    *   `## Stage Signals`: Table of detected signals and a final summary line using the format: **Total signals: {N}**. If N < 3, include a warning about Phase 3 weak-state fallback.
 
 ### Phase 2 — DIAGNOSE
 Stub: Evaluating detected configurations against identity, workflow, in-flight, startup, and duplication dimensions.
