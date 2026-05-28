@@ -94,7 +94,15 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 
 5.  **Auto-load coverage check.** Identify rules/commands living only in a non-auto-loaded file (not Layer 0) and not referenced/summarized from the auto-loaded layer. Report each orphan + its location.
 
-6.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`, starting with `# Diagnosis Report — {project name}`, then these 6 sections in order: `## Dimension Evaluation` (per-platform table), `## Layer 3/4 Contamination`, `## Canonical-Source Violations`, `## Size Compliance`, `## Auto-Load Coverage`, `## Diagnosis Summary`. Render `✅ None detected` (or `✅ Full coverage`) when a cross-cutting section is clean. The summary reports: platforms evaluated, gaps (count of `missing` + `present-weak`), violations (contamination + canonical-source + size), and weak-state Yes/No (usable signals < 3). End with `**Diagnosis complete.**`.
+6.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 6 sections in order:
+    *   `## Dimension Evaluation` — one row per detected platform, columns: `Platform | Identity | Workflow | In-flight | Startup | Duplication`.
+    *   `## Layer 3/4 Contamination` — columns `File | Status | Detail`; render `✅ None detected` when clean.
+    *   `## Canonical-Source Violations` — columns `Rule | Appears in`; render `✅ None detected` when clean.
+    *   `## Size Compliance` — columns `File | Lines | Limit | Status`.
+    *   `## Auto-Load Coverage` — columns `Orphan content | Location | Issue`; render `✅ Full coverage` when clean.
+    *   `## Diagnosis Summary` — reports: platforms evaluated, gaps (count of `missing` + `present-weak`), violations (contamination + canonical-source + size), and weak-state Yes/No (usable signals < 3).
+
+    End with `**Diagnosis complete.**`.
 
 ### Phase 3 — ASK
 Stub: Asking targeted clarifying questions only when information cannot be inferred from the scan.
