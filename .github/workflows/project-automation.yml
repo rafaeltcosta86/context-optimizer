@@ -226,6 +226,10 @@ jobs:
                 const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: n });
                 await moveItem(issue.node_id);
                 console.log(`Issue #${n} → Code Review / PR`);
+
+                // Swap stage label on the linked issue
+                await github.rest.issues.removeLabel({ owner, repo, issue_number: n, name: 'stage:testing' }).catch(() => {});
+                await github.rest.issues.addLabels({ owner, repo, issue_number: n, labels: ['stage:code-review'] }).catch(() => {});
               }
             } else {
               await moveItem(pr.node_id);
