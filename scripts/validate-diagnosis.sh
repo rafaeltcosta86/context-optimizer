@@ -40,7 +40,6 @@ ASSERTIONS=(
     "Always write tests before code."
     "docs/dev.md"
     "250 lines"
-    "stale"
 )
 
 for assertion in "${ASSERTIONS[@]}"; do

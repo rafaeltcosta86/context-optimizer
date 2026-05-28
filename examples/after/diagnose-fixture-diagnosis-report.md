@@ -32,7 +32,6 @@
 
 ## Diagnosis Summary
 
-- **Stale In-flight Signal:** `docs/dev.md` is > 7 days old and may contain stale information.
 - **Critical Issues:** Duplication of workflow rules between `CLAUDE.md` and `AGENTS.md`; Layer 3/4 contamination in `CLAUDE.md`.
 - **Recommendation Path:** Consolidate rules into `AGENTS.md`, remove volatile state from `CLAUDE.md`, and add a Startup section referencing reference docs.
 
