@@ -4,7 +4,9 @@
   "description": "Host-portable Claude Code skill — scan a project and recommend token-efficient context optimizations",
   "scripts": {
     "postinstall": "node scripts/install.js",
-    "test": "bash scripts/validate-fixture.sh < examples/after/hello-fixture-scan-report.md"
+    "test": "npm run test:scan && npm run test:diagnose",
+    "test:scan": "bash scripts/validate-fixture.sh < examples/after/hello-fixture-scan-report.md",
+    "test:diagnose": "bash scripts/validate-diagnosis.sh < examples/after/diagnose-fixture-diagnosis-report.md"
   },
   "keywords": [],
   "author": "",

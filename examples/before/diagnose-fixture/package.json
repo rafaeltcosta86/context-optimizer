@@ -1,6 +1,5 @@
 {
-  "name": "acme-cli",
-  "version": "1.0.0",
-  "description": "CLI tool for managing Acme widgets",
-  "bin": { "acme": "./index.js" }
+  "name": "diagnose-fixture",
+  "version": "0.1.0",
+  "description": "A fixture to test the DIAGNOSE phase."
 }

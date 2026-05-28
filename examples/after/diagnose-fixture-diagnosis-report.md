@@ -1,63 +1,39 @@
 ---DIAGNOSIS-REPORT-START---
 
-# Diagnosis Report — acme-cli
-
-**Source:** Scan Report for `examples/before/diagnose-fixture/`
-**Status legend:** present-good · present-weak · missing · duplicated
-
----
+# Diagnosis Report — diagnose-fixture
 
 ## Dimension Evaluation
 
 | Platform | Identity | Workflow | In-flight | Startup | Duplication |
 |---|---|---|---|---|---|
 | Claude Code | present-good | present-good | present-weak | missing | duplicated |
-| Cursor | missing | present-weak | missing | missing | present-good |
-| Cross-tool (AGENTS.md) | present-weak | present-good | missing | missing | duplicated |
-
----
+| Cursor | missing | missing | missing | missing | missing |
+| Gemini | missing | missing | missing | missing | missing |
+| Cross-tool | missing | present-weak | missing | missing | duplicated |
 
 ## Layer 3/4 Contamination
 
-| File | Status | Detail |
-|---|---|---|
-| `CLAUDE.md` | ⚠️ flagged | Static in-flight state `Current PR: #42` (Layer 4) inside a stable-identity file (Layer 3). Goes stale; emit via dynamic hook instead. |
-
----
+- `CLAUDE.md`: Contains volatile state ("Current PR") which pollutes stable Layer 3 context.
 
 ## Canonical-Source Violations
 
-| Rule | Appears in |
-|---|---|
-| "Never force-push to main" | `CLAUDE.md`, `AGENTS.md` |
-
----
+- **Violation:** Rule "Always write tests before code." is duplicated.
+  - `CLAUDE.md`
+  - `AGENTS.md`
 
 ## Size Compliance
 
-| File | Lines | Limit | Status |
-|---|---|---|---|
-| `CLAUDE.md` | 13 | 150 | ✅ |
-| `AGENTS.md` | 6 | 200 | ✅ |
-| `.cursorrules` | 1 | 150 | ✅ |
-
----
+- `docs/dev.md`: 250 lines exceeds the 200-line limit for reference files.
 
 ## Auto-Load Coverage
 
-| Orphan content | Location | Issue |
-|---|---|---|
-| Build / test commands | `docs/dev.md` | Not referenced from any auto-loaded (Layer 0) file — agent must discover it. |
-
----
+- Orphaned content detected: `AGENTS.md` rules are not referenced in the auto-loaded `CLAUDE.md`.
+- Orphaned content detected: `docs/dev.md` is not referenced in any auto-loaded file.
 
 ## Diagnosis Summary
 
-- Platforms evaluated: 3
-- Gaps (missing + present-weak): 9
-- Violations (contamination + canonical-source + size): 2
-- Weak-state: No — usable signals ≥ 3
-
-**Diagnosis complete.**
+- **Stale In-flight Signal:** `docs/dev.md` is > 7 days old and may contain stale information.
+- **Critical Issues:** Duplication of workflow rules between `CLAUDE.md` and `AGENTS.md`; Layer 3/4 contamination in `CLAUDE.md`.
+- **Recommendation Path:** Consolidate rules into `AGENTS.md`, remove volatile state from `CLAUDE.md`, and add a Startup section referencing reference docs.
 
 ---DIAGNOSIS-REPORT-END---
