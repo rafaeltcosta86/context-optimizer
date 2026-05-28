@@ -33,6 +33,7 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   **Cursor:** `.cursorrules` (legacy), `.cursor/rules/*.mdc`
     *   **Gemini CLI / Antigravity:** `GEMINI.md`, `.gemini/config.yaml`, `.gemini/styleguide.md`, `.agent/workflows/*.md`, `.agents/skills/SKILL.md`
     *   **Global user-level:** `~/.claude/settings.json` (read-only), `~/.claude/hooks/session-start.sh` (read-only)
+    *   **Reference files:** any `*.md` files outside the agent config globs above (e.g. `docs/*.md`, `CONTRIBUTING.md`, `README.md`). Record path and line count; read on demand in Step 2.
 
 2.  **Read all detected agent context files in full.** Read the content of all found context files. If a file read fails, note "partial scan" for that file and continue.
 
@@ -72,7 +73,45 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   `## Stage Signals`: Table of detected signals and a final summary line using the format: **Total signals: {N}**. If N < 3, include a warning about Phase 3 weak-state fallback.
 
 ### Phase 2 — DIAGNOSE
-Stub: Evaluating detected configurations against identity, workflow, in-flight, startup, and duplication dimensions.
+
+**Purpose:** Evaluate the Scan Report against 5 dimensions and 4 cross-cutting diagnostics, then emit a structured Diagnosis Report consumed by Phases 3–5. This phase is **read-only** — never write project files here.
+
+**Inputs:** The Scan Report emitted in Phase 1.
+
+**Procedure:**
+
+1.  **Evaluate the 5 dimensions per detected platform.** For each platform in the Scan Report (Claude Code, Cursor, Gemini, Cross-tool/`AGENTS.md`), assign each dimension one status: `present-good`, `present-weak`, `missing`, or `duplicated`.
+    *   **Identity:** Does a context file state what the project IS (purpose + type) in its first lines? Full summary → `present-good`; named but no purpose → `present-weak`; absent → `missing`.
+    *   **Workflow:** Are mandatory steps, stage gates, or build/test commands documented? Complete → `present-good`; coding-style-only / partial → `present-weak`; absent → `missing`.
+    *   **In-flight:** Does the agent see active work? Dynamic SessionStart `gh` hook → `present-good`; static roadmap or "Current PR/issue" line (goes stale) → `present-weak`; none → `missing`.
+    *   **Startup:** Is there an explicit "Read X first" / "Run Y on start"? Present → `present-good`; absent → `missing`.
+    *   **Duplication:** Does a rule in this file also appear verbatim in another context file? If yes → `duplicated`; if the file's rules are unique → `present-good`. (`duplicated` is a violation, not a gap — it counts toward canonical-source violations, not the gap total.)
+
+2.  **Layer 3/4 contamination check.** Flag any context file mixing stable identity/invariants (Layer 3) with volatile in-flight state (Layer 4) — e.g. a static `Current PR: #N`, "active issue", or "this week's priorities" line inside `CLAUDE.md`/`AGENTS.md`/memory. Report file + offending content + fix (emit via dynamic hook).
+
+3.  **Canonical-source check.** For each non-trivial rule (workflow step, invariant, any "always"/"never" statement), count occurrences across all context files. ≥2 files = violation. Report rule text + the files.
+
+4.  **Size compliance check.** Compare each context file's line count to its limit. Limits by file type:
+    *   `CLAUDE.md` — 150 lines
+    *   `AGENTS.md` — 200 lines
+    *   `GEMINI.md` — 150 lines
+    *   `.cursorrules` — 150 lines
+    *   Any `.cursor/rules/*.mdc` — 150 lines
+    *   Any `CONTEXT.md` — 80 lines
+    *   Any other reference file (`docs/`, etc.) — 200 lines
+    Report file, lines, limit, ✅ (within) or ⚠️ (over).
+
+5.  **Auto-load coverage check.** Identify rules/commands living only in a non-auto-loaded file (not Layer 0) and not referenced/summarized from the auto-loaded layer. Report each orphan + its location.
+
+6.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 6 sections in order:
+    *   `## Dimension Evaluation` — one row per detected platform, columns: `Platform | Identity | Workflow | In-flight | Startup | Duplication`.
+    *   `## Layer 3/4 Contamination` — columns `File | Status | Detail`; render `✅ None detected` when clean.
+    *   `## Canonical-Source Violations` — columns `Rule | Appears in`; render `✅ None detected` when clean.
+    *   `## Size Compliance` — columns `File | Lines | Limit | Status`.
+    *   `## Auto-Load Coverage` — columns `Orphan content | Location | Issue`; render `✅ Full coverage` when clean.
+    *   `## Diagnosis Summary` — reports: platforms evaluated, gaps (count of `missing` + `present-weak`), violations (contamination + canonical-source + size), and weak-state Yes/No (usable signals < 3).
+
+    End with `**Diagnosis complete.**`.
 
 ### Phase 3 — ASK
 Stub: Asking targeted clarifying questions only when information cannot be inferred from the scan.

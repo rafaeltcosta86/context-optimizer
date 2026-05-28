@@ -35,6 +35,10 @@ jobs:
         run: |
           bash scripts/validate-fixture.sh < examples/after/hello-fixture-scan-report.md
 
+      - name: validate-diagnosis
+        run: |
+          bash scripts/validate-diagnosis.sh < examples/after/diagnose-fixture-diagnosis-report.md
+
       # Add test/lint/build steps here as the project matures (Phase 2+)
       # - name: Run Linters
       #   run: ...
