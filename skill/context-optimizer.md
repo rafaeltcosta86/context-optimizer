@@ -33,6 +33,7 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   **Cursor:** `.cursorrules` (legacy), `.cursor/rules/*.mdc`
     *   **Gemini CLI / Antigravity:** `GEMINI.md`, `.gemini/config.yaml`, `.gemini/styleguide.md`, `.agent/workflows/*.md`, `.agents/skills/SKILL.md`
     *   **Global user-level:** `~/.claude/settings.json` (read-only), `~/.claude/hooks/session-start.sh` (read-only)
+    *   **Reference files:** any `*.md` files outside the agent config globs above (e.g. `docs/*.md`, `CONTRIBUTING.md`, `README.md`). Record path and line count; read on demand in Step 2.
 
 2.  **Read all detected agent context files in full.** Read the content of all found context files. If a file read fails, note "partial scan" for that file and continue.
 
@@ -90,7 +91,15 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 
 3.  **Canonical-source check.** For each non-trivial rule (workflow step, invariant, any "always"/"never" statement), count occurrences across all context files. ≥2 files = violation. Report rule text + the files.
 
-4.  **Size compliance check.** Compare each context file's line count to its limit: `CLAUDE.md` > 150, any `CONTEXT.md` > 80, reference files > 200. Report file, lines, limit, ✅/⚠️.
+4.  **Size compliance check.** Compare each context file's line count to its limit. Limits by file type:
+    *   `CLAUDE.md` — 150 lines
+    *   `AGENTS.md` — 200 lines
+    *   `GEMINI.md` — 150 lines
+    *   `.cursorrules` — 150 lines
+    *   Any `.cursor/rules/*.mdc` — 150 lines
+    *   Any `CONTEXT.md` — 80 lines
+    *   Any other reference file (`docs/`, etc.) — 200 lines
+    Report file, lines, limit, ✅ (within) or ⚠️ (over).
 
 5.  **Auto-load coverage check.** Identify rules/commands living only in a non-auto-loaded file (not Layer 0) and not referenced/summarized from the auto-loaded layer. Report each orphan + its location.
 
