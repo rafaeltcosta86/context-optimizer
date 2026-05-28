@@ -1,5 +1,6 @@
-# AGENTS.md
+# Agent Contract — acme-cli
 
-## General Rules
-- Rule 1: Always write tests before code.
-- Rule 3: Use descriptive commit messages.
+## Rules
+
+- Never force-push to main.
+- Run `npm test` before every commit.

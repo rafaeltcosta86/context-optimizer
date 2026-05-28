@@ -29,12 +29,6 @@
 
 ---
 
-## Reference Files
-
-- `README.md` (30 lines)
-
----
-
 ## Hooks
 
 | Hook | Status |

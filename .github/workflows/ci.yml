@@ -30,7 +30,8 @@ jobs:
           fi
           echo "✅ Skill file present."
 
-      - name: validate-scan
+      - name: validate-fixture
+        if: true
         run: |
           bash scripts/validate-fixture.sh < examples/after/hello-fixture-scan-report.md
 

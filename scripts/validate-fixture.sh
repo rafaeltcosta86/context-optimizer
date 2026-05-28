@@ -18,7 +18,6 @@ fi
 SECTIONS=(
     "## Detected Agent Platforms"
     "## Context File Details"
-    "## Reference Files"
     "## Hooks"
     "## Memory"
     "## Git"

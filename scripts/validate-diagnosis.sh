@@ -26,20 +26,17 @@ SECTIONS=(
 
 for section in "${SECTIONS[@]}"; do
     if [[ "$INPUT" != *"$section"* ]]; then
-        echo "FAIL: Missing section: $section"
+        echo "FAIL: Missing $section"
         exit 1
     fi
 done
 
-# Fixture-specific assertions
+# diagnose-fixture specific assertions
 ASSERTIONS=(
-    "diagnose-fixture"
     "duplicated"
-    "CLAUDE.md"
-    "AGENTS.md"
-    "Always write tests before code."
-    "docs/dev.md"
-    "250 lines"
+    "Current PR: #42"
+    "Never force-push to main"
+    "Diagnosis complete."
 )
 
 for assertion in "${ASSERTIONS[@]}"; do

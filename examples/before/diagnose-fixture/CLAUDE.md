@@ -1,12 +1,13 @@
-# CLAUDE.md
+# acme-cli
 
-## Project Identity
-- **Name:** Diagnose Fixture
-- **Type:** Test fixture for context-optimizer Phase 2.
-
-## Current PR
-- PR #1: Implement Phase 2 DIAGNOSE (Active)
+**What it is:** A CLI tool for managing Acme widgets.
+**Stack:** Node.js, npm.
 
 ## Workflow Rules
-- Rule 1: Always write tests before code.
-- Rule 2: Use 2-space indentation.
+
+- Never force-push to main.
+- All changes go through PR review.
+
+## Current Work
+
+Current PR: #42 — refactor the widget cache.
