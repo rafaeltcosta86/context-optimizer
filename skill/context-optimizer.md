@@ -72,6 +72,8 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   `## In-Flight State`: List of active issues/PRs or "Skipped".
     *   `## Stage Signals`: Table of detected signals and a final summary line using the format: **Total signals: {N}**. If N < 3, include a warning about Phase 3 weak-state fallback.
 
+After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE** without pausing for user input. The Scan Report serves as the input to Phase 2.
+
 ### Phase 2 — DIAGNOSE
 
 **Purpose:** Evaluate the Scan Report against 5 dimensions and 4 cross-cutting diagnostics, then emit a structured Diagnosis Report consumed by Phases 3–5. This phase is **read-only** — never write project files here.
@@ -113,11 +115,13 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 
     End with `**Diagnosis complete.**`.
 
+After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK** without pausing for user input.
+
 ### Phase 3 — ASK
-Stub: Asking targeted clarifying questions only when information cannot be inferred from the scan.
+Stub: Asking targeted clarifying questions only when information cannot be inferred from the scan. After completing (or skipping when no questions are needed), **proceed immediately to Phase 4 — RECOMMEND**.
 
 ### Phase 4 — RECOMMEND
-Stub: Generating prioritized recommendations with token cost, estimated savings, and mandatory Known Pattern mapping (or ad-hoc tagging).
+Stub: Generating prioritized recommendations with token cost, estimated savings, and mandatory Known Pattern mapping (or ad-hoc tagging). After presenting recommendations and receiving user approval, **proceed immediately to Phase 5 — IMPLEMENT**.
 
 ### Phase 5 — IMPLEMENT
 Stub: Applying approved recommendations via non-destructive merges (with cross-host caveats) and producing a context-spec.md audit record.
