@@ -118,10 +118,10 @@ After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE*
 After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK** without pausing for user input.
 
 ### Phase 3 — ASK
-Stub: Asking targeted clarifying questions only when information cannot be inferred from the scan. After completing (or skipping when no questions are needed), **proceed immediately to Phase 4 — RECOMMEND**.
+Stub: Asking targeted clarifying questions only when information cannot be inferred from the scan. If questions are asked, wait for the user's response before continuing; once answered (or if skipping when no questions are needed), **proceed immediately to Phase 4 — RECOMMEND**.
 
 ### Phase 4 — RECOMMEND
-Stub: Generating prioritized recommendations with token cost, estimated savings, and mandatory Known Pattern mapping (or ad-hoc tagging). After presenting recommendations and receiving user approval, **proceed immediately to Phase 5 — IMPLEMENT**.
+Stub: Generating prioritized recommendations with token cost, estimated savings, and mandatory Known Pattern mapping (or ad-hoc tagging). After presenting recommendations: if the user approves, **proceed immediately to Phase 5 — IMPLEMENT**; if the user provides feedback or rejects, refine the recommendations and re-present before proceeding.
 
 ### Phase 5 — IMPLEMENT
 Stub: Applying approved recommendations via non-destructive merges (with cross-host caveats) and producing a context-spec.md audit record.
