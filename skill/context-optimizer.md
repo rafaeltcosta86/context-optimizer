@@ -118,7 +118,40 @@ After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE*
 After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK** without pausing for user input.
 
 ### Phase 3 — ASK
-Stub: Asking targeted clarifying questions only when information cannot be inferred from the scan. If questions are asked, wait for the user's response before continuing; once answered (or if skipping when no questions are needed), **proceed immediately to Phase 4 — RECOMMEND**.
+
+**Purpose:** Fill the smallest possible gap in understanding by asking the user only what cannot be inferred from the scan.
+
+**Inputs:** The Scan Report and Diagnosis Report.
+
+**Procedure:**
+
+1.  **Count usable scan signals.** Calculate the signal count from the Scan Report:
+    *   **Context file:** +1 signal for every context file with ≥ 5 lines.
+    *   **Hooks:** +1 signal if any project or global hook is detected.
+    *   **Memory:** +1 signal if memory count > 0.
+    *   **Manifest:** +1 signal if a clear project type was identified from the manifest.
+
+2.  **Branch based on signal count:**
+    *   **If Signal count < 3 (Weak-state):** Ask exactly 3 fixed questions in a single message and wait for the user's response:
+        *   Q1: In one or two sentences, what does this project do?
+        *   Q2: What are the rules a new agent must never break in this project?
+        *   Q3: What changes most frequently in the active work — issues/PRs in a tracker, tasks in a board, or something else?
+    *   **If Signal count ≥ 3 (Normal-state):** Inspect the Diagnosis Report for gaps the scan cannot resolve. Ask 0–3 surgical questions. Triggers include:
+        *   Multiple platforms detected but no `AGENTS.md`: *Should rules be unified in `AGENTS.md` (cross-tool) or kept per-platform?*
+        *   Stage signals = 1 (ambiguous): *Is this project organized as a sequential workflow (each folder = a stage) or is the numbering coincidental?*
+        *   `gh` not authenticated: *Do you want dynamic in-flight queries (requires `gh auth login`) or a static roadmap file (you maintain manually)?*
+        If no gaps exist, skip asking entirely.
+
+3.  **Hard Invariant:** Never re-ask what the scan already answered.
+
+4.  **Emit the Ask Report.** Produce a block delimited by `---ASK-REPORT-START---` and `---ASK-REPORT-END---`.
+    *   Start with `# Ask Report — {project name}`.
+    *   Include metadata: `**Mode:** weak-state | normal-state` and `**Signal count:** N`.
+    *   `## Questions Asked`: List all questions posed to the user (or "None" if skipped).
+    *   `## Answers Received`: Record the user's responses (or "N/A" if skipped).
+    *   End with `**Ask complete.**`.
+
+After the Ask Report is emitted (or when 0 questions are needed), **proceed immediately to Phase 4 — RECOMMEND** without pausing.
 
 ### Phase 4 — RECOMMEND
 Stub: Generating prioritized recommendations with token cost, estimated savings, and mandatory Known Pattern mapping (or ad-hoc tagging). After presenting recommendations: if the user approves, **proceed immediately to Phase 5 — IMPLEMENT**; if the user provides feedback or rejects, refine the recommendations and re-present before proceeding.
