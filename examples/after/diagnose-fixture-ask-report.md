@@ -7,11 +7,11 @@
 
 ## Questions Asked
 
-1. Should rules be unified in `AGENTS.md` (cross-tool) or kept per-platform?
+1. Do you want dynamic in-flight queries (requires `gh auth login`) or a static roadmap file (you maintain manually)?
 
 ## Answers Received
 
-1. Keep them per-platform for now.
+1. Static roadmap file.
 
 **Ask complete.**
 

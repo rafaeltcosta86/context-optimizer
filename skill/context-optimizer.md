@@ -126,7 +126,7 @@ After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK*
 **Procedure:**
 
 1.  **Count usable scan signals.** Calculate the signal count from the Scan Report:
-    *   **Context file:** +1 signal for every context file with ≥ 5 lines.
+    *   **Context file:** +1 signal for every context file (such as `.cursorrules`, `AGENTS.md`, or `GEMINI.md`) with ≥ 5 lines.
     *   **Hooks:** +1 signal if any project or global hook is detected.
     *   **Memory:** +1 signal if memory count > 0.
     *   **Manifest:** +1 signal if a clear project type was identified from the manifest.
@@ -139,7 +139,7 @@ After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK*
     *   **If Signal count ≥ 3 (Normal-state):** Inspect the Diagnosis Report for gaps the scan cannot resolve. Ask 0–3 surgical questions. Triggers include:
         *   Multiple platforms detected but no `AGENTS.md`: *Should rules be unified in `AGENTS.md` (cross-tool) or kept per-platform?*
         *   Stage signals = 1 (ambiguous): *Is this project organized as a sequential workflow (each folder = a stage) or is the numbering coincidental?*
-        *   `gh` not authenticated: *Do you want dynamic in-flight queries (requires `gh auth login`) or a static roadmap file (you maintain manually)?*
+        *   `gh` not authenticated, or no `gh` hook in a git root (determined by reading the Scan Report's `## In-Flight State` section which shows "Skipped" or "no gh auth" — Phase 3 does NOT re-run `gh` commands): *Do you want dynamic in-flight queries (requires installing `gh`, running `gh auth login`, and being inside a git repository verified via `test -e .git`) or a static roadmap file (you maintain manually)?*
         If no gaps exist, skip asking entirely.
 
 3.  **Hard Invariant:** Never re-ask what the scan already answered.
