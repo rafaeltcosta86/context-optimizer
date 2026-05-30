@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-29
 **Issue:** [#22](https://github.com/rafaeltcosta86/context-optimizer/issues/22)
-**Status:** Approved — ready for implementation planning
+**Status:** Awaiting user review
 
 ---
 
@@ -24,7 +24,7 @@ Count "usable signals" from the Scan Report. One signal per qualifying source:
 
 | Source | Counts if |
 |--------|-----------|
-| Context file | ≥ 5 lines (per file — multiple files each count individually) |
+| Context file | ≥ 5 lines (per file — multiple files each count individually). "Context file" = agent config files only: `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.cursorrules`, `.cursor/rules/*.mdc`. `README.md` is NOT counted — it is read for project summary in Phase 1 but is not an agent context file. |
 | Hook | any hook detected (project-level or global) |
 | Memory | count > 0 populated entries |
 | Project type | clear type from manifest (not "unknown") |
@@ -57,7 +57,7 @@ Walk the Diagnosis Report for gaps the scan cannot answer. Fire 0–3 surgical q
 |---|---|
 | ≥ 2 platforms detected AND no `AGENTS.md` present | Should rules be unified in `AGENTS.md` (cross-tool) or kept per-platform? |
 | Stage signals score = 1 (ambiguous — one weak signal only) | Is this project organized as a sequential workflow or is the numbering coincidental? |
-| `gh` not authenticated (or not installed) | Do you want dynamic in-flight queries (requires `gh auth login`) or a static roadmap file (you maintain manually)? |
+| `gh` not authenticated (or not installed) — determined by reading the Scan Report's `## In-Flight State` section: if it shows "Skipped" or "no gh auth", this trigger fires. Phase 3 does NOT re-run gh commands. | Do you want dynamic in-flight queries (requires `gh auth login`) or a static roadmap file (you maintain manually)? |
 
 If **0 triggers fire**: emit ASK-REPORT immediately, no user wait, proceed to Phase 4.
 If **≥ 1 trigger fires**: ask all triggered questions together in one message, wait for response, then emit ASK-REPORT.
