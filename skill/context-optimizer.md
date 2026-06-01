@@ -158,3 +158,33 @@ Stub: Generating prioritized recommendations with token cost, estimated savings,
 
 ### Phase 5 — IMPLEMENT
 Stub: Applying approved recommendations via non-destructive merges (with cross-host caveats) and producing a context-spec.md audit record.
+
+## Known Patterns
+
+### score-health-computation
+
+**Trigger:** Phase 2 Step 6 (score compute) and Phase 4 (projected score per recommendation)
+
+**Per-dimension score mapping:**
+- `missing` → 0
+- `present-weak` → 4
+- `present-good` with violations tied to this dimension → 8
+- `present-good` with no violations → 10
+- `duplicated` → max(0, 8 − (2 × unique violations implicating this platform)); violations = de-duplicated union of `duplicated` status entries and canonical-source violation entries
+
+**Violation → dimension mapping:**
+- Layer 3/4 contamination → In-flight dimension (blocks +2 bonus; keeps present-good at 8)
+- Canonical-source violations → Duplication dimension (−2 per unique violation per implicated platform)
+
+**Aggregation:**
+- Per-platform aggregate = sum(5 dimension scores) / 5, rounded to nearest integer
+- Overall aggregate = average of per-platform aggregates, rounded to nearest integer
+
+**Projected score:** Recompute overall aggregate with all P1+P2 dimensions set to 10; P3 (Duplication) unchanged.
+
+**Priority map (fixed):**
+- In-flight: P1
+- Startup: P1
+- Identity: P2
+- Workflow: P2
+- Duplication: P3
