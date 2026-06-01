@@ -146,7 +146,7 @@ After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK*
         *   Q3: What changes most frequently in the active work — issues/PRs in a tracker, tasks in a board, or something else?
     *   **If Signal count ≥ 3 (Normal-state):** Inspect the Diagnosis Report for gaps the scan cannot resolve. Ask 0–3 surgical questions. Triggers include:
         *   Multiple platforms detected but no `AGENTS.md`: *Should rules be unified in `AGENTS.md` (cross-tool) or kept per-platform?*
-        *   Stage signals = 1 (ambiguous): *Is this project organized as a sequential workflow (each folder = a stage) or is the numbering coincidental?*
+        *   Stage signals score = 1 (ambiguous): *Is this project organized as a sequential workflow (each folder = a stage) or is the numbering coincidental?*
         *   `gh` not authenticated, or no `gh` hook in a git root (determined by reading the Scan Report's `## In-Flight State` section which shows "Skipped" or "no gh auth" — Phase 3 does NOT re-run `gh` commands): *Do you want dynamic in-flight queries (requires installing `gh`, running `gh auth login`, and being inside a git repository verified via `test -e .git`) or a static roadmap file (you maintain manually)?*
         If no gaps exist, skip asking entirely.
 
