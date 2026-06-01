@@ -105,7 +105,16 @@ After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE*
 
 5.  **Auto-load coverage check.** Identify rules/commands living only in a non-auto-loaded file (not Layer 0) and not referenced/summarized from the auto-loaded layer. Report each orphan + its location.
 
-6.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 6 sections in order:
+6.  **Calculate Context Health Score.** Apply the scoring logic (defined in Known Patterns) to the findings. Calculate current score, projected score, and individual dimension scores (0–10) with priority (P1–P3).
+
+7.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`.
+
+    The report MUST begin with the **Context Health Score** block:
+    *   `## Context Health Score`: Show "Current: X / 10", "After recommendations: Y / 10 (+Z)".
+    *   A summary table with columns: `Dimension | Score | Priority`. Dimensions: Identity, Workflow, In-Flight, Startup, Duplication.
+    *   A one-line verdict: e.g., `> N P1 gaps blocking agent efficiency. Applying recommendations brings score to Y/10.`
+
+    Then follow with these 6 detailed sections in order:
     *   `## Dimension Evaluation` — one row per detected platform, columns: `Platform | Identity | Workflow | In-flight | Startup | Duplication`.
     *   `## Layer 3/4 Contamination` — columns `File | Status | Detail`; render `✅ None detected` when clean.
     *   `## Canonical-Source Violations` — columns `Rule | Appears in`; render `✅ None detected` when clean.
@@ -160,3 +169,27 @@ Stub: Generating prioritized recommendations with token cost, estimated savings,
 
 ### Phase 5 — IMPLEMENT
 Stub: Applying approved recommendations via non-destructive merges (with cross-host caveats) and producing a context-spec.md audit record.
+
+## Known Patterns
+
+### Score Definition
+
+**Dimension Score (0–10):**
+- **Base Score:** 3 if project type/manifest detected, else 0.
+- **Status Scores:** `missing` = 0, `present-weak` = 4, `present-good` = 8, `no-issues` = 10.
+- **Dimension Average:** Sum of status scores across evaluated platforms / Count of platforms.
+- **Penalties:**
+    - Contamination: -3 to In-Flight score.
+    - Auto-Load Violation: -5 to Workflow score (if affecting workflow).
+    - Canonical-Source Violation: -2 per violation to Duplication score.
+    - Missing Identity: -2 if any platform is `missing` Identity.
+- **Calculation:** `Dimension Score = Base + Average - Penalties`. Capped at [0, 10].
+
+**Priority Mapping:**
+- **P1:** Score < 4 (Critical gaps).
+- **P2:** 4 ≤ Score ≤ 7 (Moderate gaps).
+- **P3:** Score > 7 (Minor issues or duplication).
+
+**Overall Score:**
+- **Current Score:** Simple average of the 5 dimension scores, rounded to nearest integer.
+- **Projected Score:** Recalculated average assuming all P1 and P2 gaps are resolved to `present-good` (8).

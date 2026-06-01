@@ -7,6 +7,23 @@
 
 ---
 
+## Context Health Score
+
+Current: 3 / 10
+After recommendations: 8 / 10  (+5)
+
+| Dimension    | Score | Priority |
+|--------------|-------|----------|
+| Identity     | ⚠️ 5/10 | P2 |
+| Workflow     | ⚠️ 4/10 | P2 |
+| In-Flight    | ❌ 1/10 | P1 |
+| Startup      | ⚠️ 3/10 | P1 |
+| Duplication  | ⚠️ 6/10 | P3 |
+
+> 2 P1 gaps blocking agent efficiency. Applying R1+R2 brings score to 8/10.
+
+---
+
 ## Dimension Evaluation
 
 | Platform | Identity | Workflow | In-flight | Startup | Duplication |
