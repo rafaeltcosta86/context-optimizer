@@ -40,6 +40,7 @@ ASSERTIONS=(
     "Current PR: #42"
     "Never force-push to main"
     "Diagnosis complete."
+    "**→ Diagnosis complete. Proceeding to Phase 3 — ASK immediately.**"
 )
 
 for assertion in "${ASSERTIONS[@]}"; do

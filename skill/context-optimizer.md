@@ -19,6 +19,12 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 
 ## Procedure
 
+**Pipeline execution contract:** This skill runs as a single uninterrupted pipeline in one response. Do NOT stop, summarize, or ask for confirmation between phases. Do NOT ask "Should I proceed?" between phases. The only permitted pause points are:
+- **Phase 3** — when questions need to be asked: stop and wait for user response
+- **Phase 4** — after emitting recommendations: stop and wait for user approval or feedback
+
+All other phase transitions are automatic. Begin Phase 1 immediately.
+
 ### Phase 1 — SCAN
 
 **Purpose:** Build a complete picture of the project's current session-context infrastructure without asking the user anything.
@@ -72,6 +78,8 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   `## In-Flight State`: List of active issues/PRs or "Skipped".
     *   `## Stage Signals`: Table of detected signals and a final summary line using the format: **Total signals: {N}**. If N < 3, include a warning about Phase 3 weak-state fallback.
 
+End the report with the anchor line: **→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**
+
 After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE** without pausing for user input. The Scan Report serves as the input to Phase 2.
 
 ### Phase 2 — DIAGNOSE
@@ -121,7 +129,9 @@ After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE*
     *   `## Auto-Load Coverage` — columns `Orphan content | Location | Issue`; render `✅ Full coverage` when clean.
     *   `## Diagnosis Summary` — reports: platforms evaluated, gaps (count of `missing` + `present-weak`), violations (contamination + canonical-source + size), and weak-state Yes/No (usable signals < 3).
 
-    End with `**Diagnosis complete.**`.
+    End the report with the anchor lines:
+    **Diagnosis complete.**
+    **→ Diagnosis complete. Proceeding to Phase 3 — ASK immediately.**
 
 After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK** without pausing for user input.
 
@@ -152,22 +162,86 @@ After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK*
 
 3.  **Hard Invariant:** Never re-ask what the scan already answered.
 
-4.  **Emit the Ask Report.** Produce a block delimited by `---ASK-REPORT-START---` and `---ASK-REPORT-END---`.
+4.  **Hard Invariant:** Never use preference annotations (e.g. "(Recommended)", "(preferred)") in questions or options. All choices must be presented neutrally; the skill's prior is only expressed in Phase 4.
+
+5.  **Emit the Ask Report.** Produce a block delimited by `---ASK-REPORT-START---` and `---ASK-REPORT-END---`.
     *   Start with `# Ask Report — {project name}`.
     *   Include metadata: `**Mode:** weak-state | normal-state` and `**Signal count:** N`.
     *   `## Questions Asked`: List all questions posed to the user (or "None" if skipped).
     *   `## Answers Received`: Record the user's responses (or "N/A" if skipped).
     *   End with `**Ask complete.**`.
+    *   If 0 questions were asked, append the anchor line: **→ Ask complete. Proceeding to Phase 4 — RECOMMEND immediately.**
 
 After the Ask Report is emitted (or when 0 questions are needed), **proceed immediately to Phase 4 — RECOMMEND** without pausing.
 
 ### Phase 4 — RECOMMEND
-Stub: Generating prioritized recommendations with token cost, estimated savings, and mandatory Known Pattern mapping (or ad-hoc tagging). After presenting recommendations: if the user approves, **proceed immediately to Phase 5 — IMPLEMENT**; if the user provides feedback or rejects, refine the recommendations and re-present before proceeding.
+
+**Purpose:** Translate diagnosis into a prioritized, transparent list of proposed changes, expressed in terms of developer productivity (turns saved).
+
+**Inputs:** The Scan Report, Diagnosis Report, and Ask Report.
+
+**Procedure:**
+
+1.  **Generate recommendations.** For each gap or violation identified in the Diagnosis Report, map it to a Known Pattern (see the `## Known Patterns` section) or tag it as `ad-hoc`.
+
+2.  **Estimate impact.** For each recommendation, calculate:
+    *   **Turns saved:** The estimated number of discovery turns eliminated per session (e.g., 1–2 turns). Use the table in `## Known Patterns` for estimates.
+    *   **Token cost:** The number of tokens added to the session-start context (e.g., +30 tokens).
+
+3.  **Apply Threshold Filter (Hard Rule):**
+    *   Any recommendation estimated to save **fewer than 3 turns** (i.e., patterns estimating ≤ 2 turns max) MUST be suppressed from the main recommendation list.
+    *   Suppressed recommendations are NOT discarded; they are moved to a "Suppressed" list to be logged in `context-spec.md` during Phase 5.
+
+4.  **Present recommendations.** Display the non-suppressed recommendations in a table, ordered by turns saved (descending). Use the following format for each row:
+    *   **Turns saved:** N–M turns/session (Primary metric)
+    *   **Token cost:** +X tokens/session (~Ys latency, negligible)
+
+    **Example row:**
+    | ID | Title | Turns saved | Token cost |
+    |---|---|---|---|
+    | R-1 | Add dynamic gh hook | 2–4 turns/session | +30 tokens/session (~0.02s latency, negligible) |
+
+5.  **Seek approval.** Present the list to the user.
+    *   If the user approves one or more: **proceed immediately to Phase 5 — IMPLEMENT**.
+    *   If the user provides feedback or rejects: refine the recommendations and re-present.
+
+**Output:** A list of approved recommendations and a list of suppressed recommendations.
 
 ### Phase 5 — IMPLEMENT
-Stub: Applying approved recommendations via non-destructive merges (with cross-host caveats) and producing a context-spec.md audit record.
+
+**Purpose:** Apply approved recommendations via non-destructive merges and produce a `context-spec.md` audit record.
+
+**Procedure:**
+
+1.  **Group changes by file.** For all approved recommendations, identify the target files.
+
+2.  **Apply non-destructive merges.**
+    *   For existing files (e.g., `CLAUDE.md`, `AGENTS.md`): Use `Edit` or `replace_with_git_merge_diff` to merge new sections. NEVER overwrite the entire file if it contains user content.
+    *   For new files (e.g., hooks, memory files): Create the file with the required content.
+    *   **Enforce Layer Separation:** Ensure Layer 3 (stable) and Layer 4 (volatile) content never mix in the same file.
+
+3.  **Cross-host caveat header.** If writing to a file for a host other than the one currently running (e.g., writing `.cursorrules` from Claude Code), prepend the mandatory caveat:
+    `# Added by context-optimizer (running in <current host>) — verify behavior in <target host> before relying on this`
+
+4.  **Produce `context-spec.md`.** Create or update `context-spec.md` in the project root. It MUST contain:
+    *   **## Applied Recommendations:** List of REC-IDs applied.
+    *   **## Suppressed (< 3 turns threshold):** List of recommendations that were filtered out in Phase 4 because they saved < 3 turns.
+    *   **## Project Snapshot:** Metadata about the scan signals and detected platforms.
+
+5.  **Final Summary.** Provide a brief summary of what was changed and where to find the audit record.
 
 ## Known Patterns
+
+| Pattern | Turns saved | Rationale |
+|---|---|---|
+| layer-0-startup-guide | 2–3 turns | Adds explicit "Read X/Run Y" instructions to auto-loaded files, eliminating agent guessing at start. |
+| dynamic-in-flight | 2–4 turns | Enables agent to see real-time issues/PRs via hooks; replaces turns spent manually globbing for state. |
+| static-in-flight-fallback | 1–2 turns | Provides a manually-maintained roadmap; helpful but prone to staleness (suppressed if < 3 turns). |
+| layer-3-extraction | 1–2 turns | Moves stable rules to memory; improves attention but discovery turns saved are low (suppressed if < 3 turns). |
+| canonical-source-dedup | 1 turn | Fixes conflicting rules; prevents agent confusion but rarely saves multiple turns (suppressed if < 3 turns). |
+| section-routing | 1 turn | Pointers to specific file sections; improves precision, saves minor scrolling/reading turns (suppressed if < 3 turns). |
+| cross-tool-agents-md | 2–3 turns | Unifies rules across platforms; eliminates per-platform discovery turns in multi-agent repos. |
+| stage-contract | 3–5 turns | Implements per-stage CONTEXT.md files; highest impact for complex, sequential workflows. |
 
 ### score-health-computation
 
