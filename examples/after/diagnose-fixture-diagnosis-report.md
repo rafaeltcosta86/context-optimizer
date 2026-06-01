@@ -76,5 +76,6 @@ After recommendations: 8 / 10  (+5)
 - Weak-state: No — usable signals ≥ 3
 
 **Diagnosis complete.**
+**→ Diagnosis complete. Proceeding to Phase 3 — ASK immediately.**
 
 ---DIAGNOSIS-REPORT-END---
