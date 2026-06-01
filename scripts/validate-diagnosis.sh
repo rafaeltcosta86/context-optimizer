@@ -16,6 +16,7 @@ fi
 
 # Check for required sections (Phase 2 Diagnosis Report)
 SECTIONS=(
+    "## Context Health Score"
     "## Dimension Evaluation"
     "## Layer 3/4 Contamination"
     "## Canonical-Source Violations"
@@ -33,6 +34,8 @@ done
 
 # diagnose-fixture specific assertions
 ASSERTIONS=(
+    "After recommendations:"
+    "P1 gaps blocking agent efficiency"
     "duplicated"
     "Current PR: #42"
     "Never force-push to main"
