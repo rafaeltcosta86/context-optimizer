@@ -1,5 +1,4 @@
 *Scanning project structure...*
-
 ---DIAGNOSIS-REPORT-START---
 
 # Diagnosis Report — acme-cli

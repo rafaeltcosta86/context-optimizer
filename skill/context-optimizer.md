@@ -23,7 +23,7 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 - **Phase 3** — when questions need to be asked: stop and wait for user response
 - **Phase 4** — after emitting recommendations: stop and wait for user approval or feedback
 
-**Phase transition format (mandatory):** Each automatic phase transition outputs the opening delimiter of the next phase on the line immediately following the last user-visible content — no blank line, no text of any kind between them. Example: `---DIAGNOSIS-REPORT-START---` on the very next line after the Phase 1 status line.
+**Phase transition format (mandatory):** Each automatic phase transition outputs the opening delimiter of the next phase on the line immediately following either the closing delimiter of the current phase or, if no closing delimiter exists, the last user-visible content — no blank line, no text of any kind between them. Example: `---DIAGNOSIS-REPORT-START---` on the very next line after the Phase 1 status line; `---ASK-REPORT-START---` on the very next line after `---DIAGNOSIS-REPORT-END---`.
 
 All other phase transitions are automatic. Begin Phase 1 immediately by emitting the status line and running tool calls.
 
