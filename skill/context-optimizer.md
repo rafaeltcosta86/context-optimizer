@@ -185,13 +185,13 @@ After the Ask Report is emitted (or when 0 questions are needed), **proceed imme
     *   Suppressed recommendations are NOT discarded; they are moved to a "Suppressed" list to be logged in `context-spec.md` during Phase 5.
 
 4.  **Present recommendations.** Display the non-suppressed recommendations in a table, ordered by turns saved (descending). Use the following format for each row:
-    *   **Turns saved:** N–M discovery turns/session (Primary metric)
+    *   **Turns saved:** N–M turns/session (Primary metric)
     *   **Token cost:** +X tokens/session (~Ys latency, negligible)
 
     **Example row:**
     | ID | Title | Turns saved | Token cost |
     |---|---|---|---|
-    | R-1 | Add dynamic gh hook | 2–4 turns | +30 tokens |
+    | R-1 | Add dynamic gh hook | 2–4 turns/session | +30 tokens/session (~0.02s latency, negligible) |
 
 5.  **Seek approval.** Present the list to the user.
     *   If the user approves one or more: **proceed immediately to Phase 5 — IMPLEMENT**.
