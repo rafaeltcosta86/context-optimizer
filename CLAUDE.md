@@ -21,6 +21,8 @@ Every issue flows: 💡 Idea → 🔍 Exploration → 🧠 Brainstorming → �
 
 **PDLC stage gate:** `gh pr create` is blocked by `.claude/settings.json` PreToolUse hook unless the linked issue has `stage:approval` or `stage:development` label. Never bypass except on `hotfix/` branches with explicit PM instruction.
 
+**PDLC stage pre-check (mandatory):** Before ANY analysis, debugging, planning, or implementation work on an issue — run `gh issue view <N>` and verify the issue's current `stage:*` label. MUST NOT begin work beyond the current stage without explicit user confirmation to advance in the current conversation turn. "User prioritized this issue" does NOT equal stage advancement approval. When in doubt, ask.
+
 ## Hard Invariants (non-negotiable)
 
 ### I-1: eXtreme Programming + TDD
