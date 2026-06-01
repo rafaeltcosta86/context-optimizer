@@ -105,7 +105,15 @@ After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE*
 
 5.  **Auto-load coverage check.** Identify rules/commands living only in a non-auto-loaded file (not Layer 0) and not referenced/summarized from the auto-loaded layer. Report each orphan + its location.
 
-6.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 6 sections in order:
+6.  **Compute the Context Health Score.** Using all dimension statuses and cross-cutting check results from Steps 1–5, apply the `score-health-computation` Known Pattern. Compute and record:
+    *   Per-platform × per-dimension scores (Identity, Workflow, In-flight, Startup, Duplication for each detected platform)
+    *   Per-platform aggregate score: `sum(5 dimension scores) / 5`, rounded to nearest integer
+    *   Overall aggregate score: average of per-platform aggregates, rounded to nearest integer
+    *   Projected overall score: recompute with all P1+P2 dimensions set to 10 (P3 Duplication unchanged)
+    *   Count of P1 dimensions (In-flight, Startup) scoring < 8 across any platform
+
+7.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 7 sections in order:
+    *   `## Context Health Score` — `Current: {overall} / 10`, `After recommendations: {projected} / 10 ({delta})`, then a table with columns `Platform | Identity | Workflow | In-flight | Startup | Duplication | Score` (one row per detected platform using per-dimension scores from Step 6, plus a `**Aggregate**` row showing the overall aggregate), then a one-line verdict: `> {N} P1 gaps blocking agent efficiency. Applying top P1+P2 recommendations brings score to {projected}/10.`
     *   `## Dimension Evaluation` — one row per detected platform, columns: `Platform | Identity | Workflow | In-flight | Startup | Duplication`.
     *   `## Layer 3/4 Contamination` — columns `File | Status | Detail`; render `✅ None detected` when clean.
     *   `## Canonical-Source Violations` — columns `Rule | Appears in`; render `✅ None detected` when clean.
