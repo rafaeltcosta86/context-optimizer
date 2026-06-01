@@ -110,7 +110,7 @@ After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE*
     *   Per-platform aggregate score: `sum(5 dimension scores) / 5`, rounded to nearest integer
     *   Overall aggregate score: average of per-platform aggregates, rounded to nearest integer
     *   Projected overall score: recompute with all P1+P2 dimensions set to 10 (P3 Duplication unchanged)
-    *   Count of P1 dimensions (In-flight, Startup) scoring < 8 across any platform
+    *   Count of distinct P1 dimensions (In-flight, Startup) where at least one platform's score < 8 (dimension-level count, not platform × dimension cell count)
 
 7.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 7 sections in order:
     *   `## Context Health Score` — `Current: {overall} / 10`, `After recommendations: {projected} / 10 ({delta})`, then a table with columns `Platform | Identity | Workflow | In-flight | Startup | Duplication | Score` (one row per detected platform using per-dimension scores from Step 6, plus a `**Aggregate**` row showing the overall aggregate), then a one-line verdict: `> {N} P1 gaps blocking agent efficiency. Applying top P1+P2 recommendations brings score to {projected}/10.`
@@ -178,7 +178,7 @@ Stub: Applying approved recommendations via non-destructive merges (with cross-h
 - `present-weak` → 4
 - `present-good` with violations tied to this dimension → 8
 - `present-good` with no violations → 10
-- `duplicated` → max(0, 8 − (2 × unique violations implicating this platform)); violations = de-duplicated union of `duplicated` status entries and canonical-source violation entries
+- `duplicated` → max(0, 8 − (2 × unique violations implicating this platform)); violations = de-duplicated union of `duplicated` status entries and canonical-source violation entries; a platform is implicated if its context file appears in the `Appears in` column of the Canonical-Source Violations section
 
 **Violation → dimension mapping:**
 - Layer 3/4 contamination → In-flight dimension (blocks +2 bonus; keeps present-good at 8)
