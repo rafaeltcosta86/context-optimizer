@@ -23,6 +23,8 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 - **Phase 3** — when questions need to be asked: stop and wait for user response
 - **Phase 4** — after emitting recommendations: stop and wait for user approval or feedback
 
+**Phase transition format (mandatory):** Each automatic phase transition outputs the closing delimiter of the current phase and the opening delimiter of the next phase on **consecutive lines — no blank line, no text of any kind between them.** Example: `---SCAN-REPORT-END---` on one line, `---DIAGNOSIS-REPORT-START---` on the very next line.
+
 All other phase transitions are automatic. Begin Phase 1 immediately.
 
 ### Phase 1 — SCAN
@@ -78,9 +80,9 @@ All other phase transitions are automatic. Begin Phase 1 immediately.
     *   `## In-Flight State`: List of active issues/PRs or "Skipped".
     *   `## Stage Signals`: Table of detected signals and a final summary line using the format: **Total signals: {N}**. If N < 3, include a warning about Phase 3 weak-state fallback.
 
-End the report with the anchor line: **→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**
+The last content in the scan report body is the anchor line: **→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**
 
-After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE** without pausing for user input. The Scan Report serves as the input to Phase 2.
+**Transition (mandatory):** Output `---SCAN-REPORT-END---` on one line, then `---DIAGNOSIS-REPORT-START---` on the **immediately next line** — no blank line, no text, no summary between them. Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
 
 ### Phase 2 — DIAGNOSE
 
@@ -129,11 +131,11 @@ After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE*
     *   `## Auto-Load Coverage` — columns `Orphan content | Location | Issue`; render `✅ Full coverage` when clean.
     *   `## Diagnosis Summary` — reports: platforms evaluated, gaps (count of `missing` + `present-weak`), violations (contamination + canonical-source + size), and weak-state Yes/No (usable signals < 3).
 
-    End the report with the anchor lines:
+    The last lines in the diagnosis report body are the anchors:
     **Diagnosis complete.**
     **→ Diagnosis complete. Proceeding to Phase 3 — ASK immediately.**
 
-After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK** without pausing for user input.
+**Transition (mandatory):** Output `---DIAGNOSIS-REPORT-END---` on one line, then `---ASK-REPORT-START---` on the **immediately next line** — no blank line, no text between them. Begin Phase 3 content on the line after `---ASK-REPORT-START---`.
 
 ### Phase 3 — ASK
 
@@ -170,9 +172,11 @@ After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK*
     *   `## Questions Asked`: List all questions posed to the user (or "None" if skipped).
     *   `## Answers Received`: Record the user's responses (or "N/A" if skipped).
     *   End with `**Ask complete.**`.
-    *   If 0 questions were asked, append the anchor line: **→ Ask complete. Proceeding to Phase 4 — RECOMMEND immediately.**
+    *   If 0 questions were asked, also append the anchor line: **→ Ask complete. Proceeding to Phase 4 — RECOMMEND immediately.**
 
-After the Ask Report is emitted (or when 0 questions are needed), **proceed immediately to Phase 4 — RECOMMEND** without pausing.
+**Transition:**
+- If 0 questions were asked: output `---ASK-REPORT-END---` on one line, then `---RECOMMEND-REPORT-START---` on the **immediately next line** — no blank line, no text between them.
+- If questions were asked: output `---ASK-REPORT-END---` and pause for user response. After the user responds, begin Phase 4 — RECOMMEND.
 
 ### Phase 4 — RECOMMEND
 
