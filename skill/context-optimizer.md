@@ -19,6 +19,12 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 
 ## Procedure
 
+**Pipeline execution contract:** This skill runs as a single uninterrupted pipeline in one response. Do NOT stop, summarize, or ask for confirmation between phases. Do NOT ask "Should I proceed?" between phases. The only permitted pause points are:
+- **Phase 3** — when questions need to be asked: stop and wait for user response
+- **Phase 4** — after emitting recommendations: stop and wait for user approval or feedback
+
+All other phase transitions are automatic. Begin Phase 1 immediately.
+
 ### Phase 1 — SCAN
 
 **Purpose:** Build a complete picture of the project's current session-context infrastructure without asking the user anything.
@@ -72,6 +78,8 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
     *   `## In-Flight State`: List of active issues/PRs or "Skipped".
     *   `## Stage Signals`: Table of detected signals and a final summary line using the format: **Total signals: {N}**. If N < 3, include a warning about Phase 3 weak-state fallback.
 
+End the report with the anchor line: **→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**
+
 After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE** without pausing for user input. The Scan Report serves as the input to Phase 2.
 
 ### Phase 2 — DIAGNOSE
@@ -113,7 +121,9 @@ After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE*
     *   `## Auto-Load Coverage` — columns `Orphan content | Location | Issue`; render `✅ Full coverage` when clean.
     *   `## Diagnosis Summary` — reports: platforms evaluated, gaps (count of `missing` + `present-weak`), violations (contamination + canonical-source + size), and weak-state Yes/No (usable signals < 3).
 
-    End with `**Diagnosis complete.**`.
+    End the report with the anchor lines:
+    **Diagnosis complete.**
+    **→ Diagnosis complete. Proceeding to Phase 3 — ASK immediately.**
 
 After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK** without pausing for user input.
 
@@ -152,6 +162,7 @@ After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK*
     *   `## Questions Asked`: List all questions posed to the user (or "None" if skipped).
     *   `## Answers Received`: Record the user's responses (or "N/A" if skipped).
     *   End with `**Ask complete.**`.
+    *   If 0 questions were asked, append the anchor line: **→ Ask complete. Proceeding to Phase 4 — RECOMMEND immediately.**
 
 After the Ask Report is emitted (or when 0 questions are needed), **proceed immediately to Phase 4 — RECOMMEND** without pausing.
 

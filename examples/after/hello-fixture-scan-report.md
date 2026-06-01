@@ -70,4 +70,6 @@
 
 > ⚠️ Signal count < 3 — Phase 3 will trigger the weak-state fallback (3-question dialog).
 
+**→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**
+
 ---SCAN-REPORT-END---
