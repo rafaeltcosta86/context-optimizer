@@ -38,6 +38,7 @@ ASSERTIONS=(
     "npm"
     "Not a git repository"
     "Total signals: 0"
+    "**→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**"
 )
 
 for assertion in "${ASSERTIONS[@]}"; do
