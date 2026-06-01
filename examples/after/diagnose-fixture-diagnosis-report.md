@@ -7,6 +7,22 @@
 
 ---
 
+## Context Health Score
+
+Current: 4 / 10
+After recommendations: 9 / 10  (+5)
+
+| Platform     | Identity | Workflow | In-flight | Startup | Duplication | Score |
+|--------------|----------|----------|-----------|---------|-------------|-------|
+| Claude Code  | 10       | 10       | 4         | 0       | 6           | 6/10  |
+| Cursor       | 0        | 4        | 0         | 0       | 10          | 3/10  |
+| Cross-tool   | 4        | 10       | 0         | 0       | 6           | 4/10  |
+| **Aggregate**|          |          |           |         |             | **4/10** |
+
+> 2 P1 gaps blocking agent efficiency. Applying top P1+P2 recommendations brings score to 9/10.
+
+---
+
 ## Dimension Evaluation
 
 | Platform | Identity | Workflow | In-flight | Startup | Duplication |

@@ -113,7 +113,15 @@ After the Scan Report is emitted, **proceed immediately to Phase 2 — DIAGNOSE*
 
 5.  **Auto-load coverage check.** Identify rules/commands living only in a non-auto-loaded file (not Layer 0) and not referenced/summarized from the auto-loaded layer. Report each orphan + its location.
 
-6.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 6 sections in order:
+6.  **Compute the Context Health Score.** Using all dimension statuses and cross-cutting check results from Steps 1–5, apply the `score-health-computation` Known Pattern. Compute and record:
+    *   Per-platform × per-dimension scores (Identity, Workflow, In-flight, Startup, Duplication for each detected platform)
+    *   Per-platform aggregate score: `sum(5 dimension scores) / 5`, rounded to nearest integer
+    *   Overall aggregate score: average of per-platform aggregates, rounded to nearest integer
+    *   Projected overall score: recompute with all P1+P2 dimensions set to 10 (P3 Duplication unchanged)
+    *   Count of distinct P1 dimensions (In-flight, Startup) where at least one platform's score < 8 (dimension-level count, not platform × dimension cell count)
+
+7.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 7 sections in order:
+    *   `## Context Health Score` — `Current: {overall} / 10`, `After recommendations: {projected} / 10 ({delta})`, then a table with columns `Platform | Identity | Workflow | In-flight | Startup | Duplication | Score` (one row per detected platform using per-dimension scores from Step 6, plus a `**Aggregate**` row showing the overall aggregate), then a one-line verdict: `> {N} P1 gaps blocking agent efficiency. Applying top P1+P2 recommendations brings score to {projected}/10.`
     *   `## Dimension Evaluation` — one row per detected platform, columns: `Platform | Identity | Workflow | In-flight | Startup | Duplication`.
     *   `## Layer 3/4 Contamination` — columns `File | Status | Detail`; render `✅ None detected` when clean.
     *   `## Canonical-Source Violations` — columns `Rule | Appears in`; render `✅ None detected` when clean.
@@ -148,7 +156,7 @@ After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK*
         *   Q3: What changes most frequently in the active work — issues/PRs in a tracker, tasks in a board, or something else?
     *   **If Signal count ≥ 3 (Normal-state):** Inspect the Diagnosis Report for gaps the scan cannot resolve. Ask 0–3 surgical questions. Triggers include:
         *   Multiple platforms detected but no `AGENTS.md`: *Should rules be unified in `AGENTS.md` (cross-tool) or kept per-platform?*
-        *   Stage signals = 1 (ambiguous): *Is this project organized as a sequential workflow (each folder = a stage) or is the numbering coincidental?*
+        *   Stage signals score = 1 (ambiguous): *Is this project organized as a sequential workflow (each folder = a stage) or is the numbering coincidental?*
         *   `gh` not authenticated, or no `gh` hook in a git root (determined by reading the Scan Report's `## In-Flight State` section which shows "Skipped" or "no gh auth" — Phase 3 does NOT re-run `gh` commands): *Do you want dynamic in-flight queries (requires installing `gh`, running `gh auth login`, and being inside a git repository verified via `test -e .git`) or a static roadmap file (you maintain manually)?*
         If no gaps exist, skip asking entirely.
 
@@ -234,3 +242,31 @@ After the Ask Report is emitted (or when 0 questions are needed), **proceed imme
 | section-routing | 1 turn | Pointers to specific file sections; improves precision, saves minor scrolling/reading turns (suppressed if < 3 turns). |
 | cross-tool-agents-md | 2–3 turns | Unifies rules across platforms; eliminates per-platform discovery turns in multi-agent repos. |
 | stage-contract | 3–5 turns | Implements per-stage CONTEXT.md files; highest impact for complex, sequential workflows. |
+
+### score-health-computation
+
+**Trigger:** Phase 2 Step 6 (score compute) and Phase 4 (projected score per recommendation)
+
+**Per-dimension score mapping:**
+- `missing` → 0
+- `present-weak` → 4
+- `present-good` with violations tied to this dimension → 8
+- `present-good` with no violations → 10
+- `duplicated` → max(0, 8 − (2 × unique violations implicating this platform)); violations = de-duplicated union of `duplicated` status entries and canonical-source violation entries; a platform is implicated if its context file appears in the `Appears in` column of the Canonical-Source Violations section
+
+**Violation → dimension mapping:**
+- Layer 3/4 contamination → In-flight dimension (blocks +2 bonus; keeps present-good at 8)
+- Canonical-source violations → Duplication dimension (−2 per unique violation per implicated platform)
+
+**Aggregation:**
+- Per-platform aggregate = sum(5 dimension scores) / 5, rounded to nearest integer
+- Overall aggregate = average of per-platform aggregates, rounded to nearest integer
+
+**Projected score:** Recompute overall aggregate with all P1+P2 dimensions set to 10; P3 (Duplication) unchanged.
+
+**Priority map (fixed):**
+- In-flight: P1
+- Startup: P1
+- Identity: P2
+- Workflow: P2
+- Duplication: P3
