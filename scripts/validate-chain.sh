@@ -4,26 +4,25 @@ set -euo pipefail
 # Read input from stdin
 INPUT=$(cat)
 
-# Check for all three reports
-if [[ "$INPUT" != *"---SCAN-REPORT-START---"* ]]; then echo "FAIL: Missing SCAN-REPORT"; exit 1; fi
-if [[ "$INPUT" != *"---SCAN-REPORT-END---"* ]]; then echo "FAIL: Missing SCAN-REPORT-END"; exit 1; fi
+assert_contains() {
+  local substring="$1"
+  local error_msg="$2"
+  if [[ "$INPUT" != *"$substring"* ]]; then
+    echo "FAIL: $error_msg" >&2
+    exit 1
+  fi
+}
 
-if [[ "$INPUT" != *"---DIAGNOSIS-REPORT-START---"* ]]; then echo "FAIL: Missing DIAGNOSIS-REPORT"; exit 1; fi
-if [[ "$INPUT" != *"---DIAGNOSIS-REPORT-END---"* ]]; then echo "FAIL: Missing DIAGNOSIS-REPORT-END"; exit 1; fi
-
-if [[ "$INPUT" != *"---ASK-REPORT-START---"* ]]; then echo "FAIL: Missing ASK-REPORT"; exit 1; fi
-if [[ "$INPUT" != *"---ASK-REPORT-END---"* ]]; then echo "FAIL: Missing ASK-REPORT-END"; exit 1; fi
+assert_contains "---SCAN-REPORT-START---" "Missing SCAN-REPORT"
+assert_contains "---SCAN-REPORT-END---" "Missing SCAN-REPORT-END"
+assert_contains "---DIAGNOSIS-REPORT-START---" "Missing DIAGNOSIS-REPORT"
+assert_contains "---DIAGNOSIS-REPORT-END---" "Missing DIAGNOSIS-REPORT-END"
+assert_contains "---ASK-REPORT-START---" "Missing ASK-REPORT"
+assert_contains "---ASK-REPORT-END---" "Missing ASK-REPORT-END"
 
 # Check for the automatic transition anchors
-if [[ "$INPUT" != *"**→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**"* ]]; then
-    echo "FAIL: Missing Scan-to-Diagnose anchor"
-    exit 1
-fi
-
-if [[ "$INPUT" != *"**→ Diagnosis complete. Proceeding to Phase 3 — ASK immediately.**"* ]]; then
-    echo "FAIL: Missing Diagnosis-to-Ask anchor"
-    exit 1
-fi
+assert_contains "**→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**" "Missing Scan-to-Diagnose anchor"
+assert_contains "**→ Diagnosis complete. Proceeding to Phase 3 — ASK immediately.**" "Missing Diagnosis-to-Ask anchor"
 
 echo "PASS: Chained output verified"
 exit 0
