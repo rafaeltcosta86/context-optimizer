@@ -144,7 +144,9 @@ After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK*
 
 3.  **Hard Invariant:** Never re-ask what the scan already answered.
 
-4.  **Emit the Ask Report.** Produce a block delimited by `---ASK-REPORT-START---` and `---ASK-REPORT-END---`.
+4.  **Hard Invariant:** Never use preference annotations (e.g. "(Recommended)", "(preferred)") in questions or options. All choices must be presented neutrally; the skill's prior is only expressed in Phase 4.
+
+5.  **Emit the Ask Report.** Produce a block delimited by `---ASK-REPORT-START---` and `---ASK-REPORT-END---`.
     *   Start with `# Ask Report — {project name}`.
     *   Include metadata: `**Mode:** weak-state | normal-state` and `**Signal count:** N`.
     *   `## Questions Asked`: List all questions posed to the user (or "None" if skipped).
