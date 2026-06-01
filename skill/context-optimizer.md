@@ -167,7 +167,70 @@ After the Diagnosis Report is emitted, **proceed immediately to Phase 3 — ASK*
 After the Ask Report is emitted (or when 0 questions are needed), **proceed immediately to Phase 4 — RECOMMEND** without pausing.
 
 ### Phase 4 — RECOMMEND
-Stub: Generating prioritized recommendations with token cost, estimated savings, and mandatory Known Pattern mapping (or ad-hoc tagging). After presenting recommendations: if the user approves, **proceed immediately to Phase 5 — IMPLEMENT**; if the user provides feedback or rejects, refine the recommendations and re-present before proceeding.
+
+**Purpose:** Translate diagnosis into a prioritized, transparent list of proposed changes, expressed in terms of developer productivity (turns saved).
+
+**Inputs:** The Scan Report, Diagnosis Report, and Ask Report.
+
+**Procedure:**
+
+1.  **Generate recommendations.** For each gap or violation identified in the Diagnosis Report, map it to a Known Pattern (see the `## Known Patterns` section) or tag it as `ad-hoc`.
+
+2.  **Estimate impact.** For each recommendation, calculate:
+    *   **Turns saved:** The estimated number of discovery turns eliminated per session (e.g., 1–2 turns). Use the table in `## Known Patterns` for estimates.
+    *   **Token cost:** The number of tokens added to the session-start context (e.g., +30 tokens).
+
+3.  **Apply Threshold Filter (Hard Rule):**
+    *   Any recommendation estimated to save **fewer than 3 turns** (i.e., patterns estimating ≤ 2 turns max) MUST be suppressed from the main recommendation list.
+    *   Suppressed recommendations are NOT discarded; they are moved to a "Suppressed" list to be logged in `context-spec.md` during Phase 5.
+
+4.  **Present recommendations.** Display the non-suppressed recommendations in a table, ordered by turns saved (descending). Use the following format for each row:
+    *   **Turns saved:** N–M discovery turns/session (Primary metric)
+    *   **Token cost:** +X tokens/session (~Ys latency, negligible)
+
+    **Example row:**
+    | ID | Title | Turns saved | Token cost |
+    |---|---|---|---|
+    | R-1 | Add dynamic gh hook | 2–4 turns | +30 tokens |
+
+5.  **Seek approval.** Present the list to the user.
+    *   If the user approves one or more: **proceed immediately to Phase 5 — IMPLEMENT**.
+    *   If the user provides feedback or rejects: refine the recommendations and re-present.
+
+**Output:** A list of approved recommendations and a list of suppressed recommendations.
 
 ### Phase 5 — IMPLEMENT
-Stub: Applying approved recommendations via non-destructive merges (with cross-host caveats) and producing a context-spec.md audit record.
+
+**Purpose:** Apply approved recommendations via non-destructive merges and produce a `context-spec.md` audit record.
+
+**Procedure:**
+
+1.  **Group changes by file.** For all approved recommendations, identify the target files.
+
+2.  **Apply non-destructive merges.**
+    *   For existing files (e.g., `CLAUDE.md`, `AGENTS.md`): Use `Edit` or `replace_with_git_merge_diff` to merge new sections. NEVER overwrite the entire file if it contains user content.
+    *   For new files (e.g., hooks, memory files): Create the file with the required content.
+    *   **Enforce Layer Separation:** Ensure Layer 3 (stable) and Layer 4 (volatile) content never mix in the same file.
+
+3.  **Cross-host caveat header.** If writing to a file for a host other than the one currently running (e.g., writing `.cursorrules` from Claude Code), prepend the mandatory caveat:
+    `# Added by context-optimizer (running in <current host>) — verify behavior in <target host> before relying on this`
+
+4.  **Produce `context-spec.md`.** Create or update `context-spec.md` in the project root. It MUST contain:
+    *   **## Applied Recommendations:** List of REC-IDs applied.
+    *   **## Suppressed (< 3 turns threshold):** List of recommendations that were filtered out in Phase 4 because they saved < 3 turns.
+    *   **## Project Snapshot:** Metadata about the scan signals and detected platforms.
+
+5.  **Final Summary.** Provide a brief summary of what was changed and where to find the audit record.
+
+## Known Patterns
+
+| Pattern | Turns saved | Rationale |
+|---|---|---|
+| layer-0-startup-guide | 2–3 turns | Adds explicit "Read X/Run Y" instructions to auto-loaded files, eliminating agent guessing at start. |
+| dynamic-in-flight | 2–4 turns | Enables agent to see real-time issues/PRs via hooks; replaces turns spent manually globbing for state. |
+| static-in-flight-fallback | 1–2 turns | Provides a manually-maintained roadmap; helpful but prone to staleness (suppressed if < 3 turns). |
+| layer-3-extraction | 1–2 turns | Moves stable rules to memory; improves attention but discovery turns saved are low (suppressed if < 3 turns). |
+| canonical-source-dedup | 1 turn | Fixes conflicting rules; prevents agent confusion but rarely saves multiple turns (suppressed if < 3 turns). |
+| section-routing | 1 turn | Pointers to specific file sections; improves precision, saves minor scrolling/reading turns (suppressed if < 3 turns). |
+| cross-tool-agents-md | 2–3 turns | Unifies rules across platforms; eliminates per-platform discovery turns in multi-agent repos. |
+| stage-contract | 3–5 turns | Implements per-stage CONTEXT.md files; highest impact for complex, sequential workflows. |
