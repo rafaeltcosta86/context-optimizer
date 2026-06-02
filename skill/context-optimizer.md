@@ -31,57 +31,17 @@ All other phase transitions are automatic. Begin Phase 1 immediately by emitting
 
 **Purpose:** Build a complete picture of the project's current session-context infrastructure without asking the user anything.
 
-**Inputs:** The project root directory (assumed to be the working directory at invocation).
-
 **First action (mandatory):** Before any tool calls, output exactly this line to the user:
 *Scanning project structure...*
 
 **Procedure:**
 
-1.  **Detect agent configurations.** Glob for the following files and directories. Record what's present, what's missing, and the size of each present file.
-    *   **Claude Code:** `CLAUDE.md` (project root), `.claude/settings.json`, `.claude/settings.local.json`, `.claude/hooks/*`, `~/.claude/projects/<proj>/memory/MEMORY.md`
-    *   **Cross-tool:** `AGENTS.md` (any version)
-    *   **Cursor:** `.cursorrules` (legacy), `.cursor/rules/*.mdc`
-    *   **Gemini CLI / Antigravity:** `GEMINI.md`, `.gemini/config.yaml`, `.gemini/styleguide.md`, `.agent/workflows/*.md`, `.agents/skills/SKILL.md`
-    *   **Global user-level:** `~/.claude/settings.json` (read-only), `~/.claude/hooks/session-start.sh` (read-only)
-    *   **Reference files:** any `*.md` files outside the agent config globs above (e.g. `docs/*.md`, `CONTRIBUTING.md`, `README.md`). Record path and line count; read on demand in Step 2.
+1.  **Detect agent configurations.** Glob for `CLAUDE.md`, `.claude/settings.json`, `.cursorrules`, `.cursor/rules/*.mdc`, `GEMINI.md`, `AGENTS.md`, and other agent-specific files.
+2.  **Read project metadata.** Read detected context files, project manifest (`package.json`, etc.), and the first 30 lines of `README.md`.
+3.  **Gather environmental context.** If `test -e .git` passes, query git branch, log, and status. If `gh` is authenticated, query open issues and PRs.
+4.  **Detect stage signals.** Calculate a weighted score (**Total signals: {N}**) based on numbered folders, `CONTEXT.md` files, and sequential GitHub Actions. If N < 3, trigger weak-state for Phase 3.
 
-2.  **Read all detected agent context files in full.** Read the content of all found context files. If a file read fails, note "partial scan" for that file and continue.
-
-3.  **Read project manifest.** Detect and read the first found among: `package.json` (npm), `pyproject.toml` (python), `Cargo.toml` (rust), `go.mod` (go), `mix.exs` (elixir). Parse for project name, type, and summary (from description).
-
-4.  **Read README.md (first 30 lines).** Extract project summary if no agent context file or manifest already provides it.
-
-5.  **Query git metadata via Bash:**
-    *   First, check if the current directory is a git root (defining the "git repository" status for the entire scan): `test -e .git`.
-    *   If the check passes:
-        *   Run `git rev-parse --abbrev-ref HEAD` (current branch).
-        *   Run `git log --oneline -5` (recent activity).
-        *   Run `git status --short` (uncommitted changes).
-    *   If the check fails, skip these steps and note "Not a git repository — git metadata steps skipped." The project is not a git repository for the purpose of all remaining steps.
-
-6.  **Optionally query `gh` for in-flight state.** Only if the Step 5 `test -e .git` check passed AND `gh auth status` reports authenticated:
-    *   Run `gh issue list --state open --json number,title --limit 5`.
-    *   Run `gh pr list --state open --json number,title,headRefName --limit 5`.
-    *   If `gh` is not authenticated or not installed, or Step 5 check failed, skip and note "Skipped" or "no gh auth".
-
-7.  **Detect workflow / stage signals.** Apply the multi-signal heuristic:
-    *   Numbered folders (`01-`, `02-`): weak (1)
-    *   `output/` or `artifacts/` subdirectories: medium (2)
-    *   `CONTEXT.md` files in subdirectories: strong (3)
-    *   GitHub Actions with sequential job dependencies (`needs:` chains): strong (3)
-    *   Labels with stage prefix (`stage:`, `phase:`, `pipeline:`): strong (3)
-    *   README mentions workflow / pipeline / stages: medium (2)
-    *   **Rule:** Total score ≥ 4 = recommend stage contracts. (Note: strong=3pts, medium=2pts, weak=1pt — this is a weighted score, not a signal count. The weak-state threshold in Step 8 uses raw signal count, a separate metric.)
-
-8.  **Compile scan data internally — do NOT output to user.** Organize gathered data into the following 7 sections in your internal context (never render this block in the response):
-    *   **Detected Agent Platforms:** Status (✅/❌) and files found for Claude Code, Cursor, Gemini, and Cross-tool.
-    *   **Context File Details:** Summary of each detected file (lines, sections present).
-    *   **Hooks:** Status of project and global hooks.
-    *   **Memory:** Status of memory files and count of entries.
-    *   **Git:** Branch name, recent activity, or "Not a git repository".
-    *   **In-Flight State:** List of active issues/PRs or "Skipped".
-    *   **Stage Signals:** Table of detected signals and a final tally: **Total signals: {N}**. If N < 3, note weak-state for Phase 3.
+**Output Rule:** Phase 1 has no user-visible output other than the status line and the Phase 2 opening delimiter. Do NOT output a scan report block.
 
 **Transition (mandatory):** Output `---DIAGNOSIS-REPORT-START---` on the line immediately after the status line (no additional text). Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
 
@@ -123,7 +83,7 @@ All other phase transitions are automatic. Begin Phase 1 immediately by emitting
     *   Projected overall score: recompute with all P1+P2 dimensions set to 10 (P3 Duplication unchanged)
     *   Count of distinct P1 dimensions (In-flight, Startup) where at least one platform's score < 8 (dimension-level count, not platform × dimension cell count)
 
-7.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 7 sections in order:
+7.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Phase 1 scan of {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 7 sections in order:
     *   `## Context Health Score` — `Current: {overall} / 10`, `After recommendations: {projected} / 10 ({delta})`, then a table with columns `Platform | Identity | Workflow | In-flight | Startup | Duplication | Score` (one row per detected platform using per-dimension scores from Step 6, plus a `**Aggregate**` row showing the overall aggregate), then a one-line verdict: `> {N} P1 gaps blocking agent efficiency. Applying top P1+P2 recommendations brings score to {projected}/10.`
     *   `## Dimension Evaluation` — one row per detected platform, columns: `Platform | Identity | Workflow | In-flight | Startup | Duplication`.
     *   `## Layer 3/4 Contamination` — columns `File | Status | Detail`; render `✅ None detected` when clean.
