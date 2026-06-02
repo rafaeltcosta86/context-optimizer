@@ -23,15 +23,18 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 - **Phase 3** — when questions need to be asked: stop and wait for user response
 - **Phase 4** — after emitting recommendations: stop and wait for user approval or feedback
 
-**Phase transition format (mandatory):** Each automatic phase transition outputs the closing delimiter of the current phase and the opening delimiter of the next phase on **consecutive lines — no blank line, no text of any kind between them.** Example: `---SCAN-REPORT-END---` on one line, `---DIAGNOSIS-REPORT-START---` on the very next line.
+**Phase transition format (mandatory):** Each automatic phase transition outputs the opening delimiter of the next phase on the line immediately following either the closing delimiter of the current phase or, if no closing delimiter exists, the last user-visible content — no blank line, no text of any kind between them. Example: `---DIAGNOSIS-REPORT-START---` on the very next line after the Phase 1 status line; `---ASK-REPORT-START---` on the very next line after `---DIAGNOSIS-REPORT-END---`.
 
-All other phase transitions are automatic. Begin Phase 1 immediately.
+All other phase transitions are automatic. Begin Phase 1 immediately by emitting the status line and running tool calls.
 
 ### Phase 1 — SCAN
 
 **Purpose:** Build a complete picture of the project's current session-context infrastructure without asking the user anything.
 
 **Inputs:** The project root directory (assumed to be the working directory at invocation).
+
+**First action (mandatory):** Before any tool calls, output exactly this line to the user:
+*Scanning project structure...*
 
 **Procedure:**
 
@@ -71,28 +74,26 @@ All other phase transitions are automatic. Begin Phase 1 immediately.
     *   README mentions workflow / pipeline / stages: medium (2)
     *   **Rule:** Total score ≥ 4 = recommend stage contracts. (Note: strong=3pts, medium=2pts, weak=1pt — this is a weighted score, not a signal count. The weak-state threshold in Step 8 uses raw signal count, a separate metric.)
 
-8.  **Emit the Scan Report.** Produce a structured report delimited by `---SCAN-REPORT-START---` and `---SCAN-REPORT-END---`. The report MUST start with a `# Scan Report — {project name}` header, followed by project metadata (Scanned path, Project type, and Summary), and then these 7 mandatory sections:
-    *   `## Detected Agent Platforms`: Status (✅/❌) and files found for Claude Code, Cursor, Gemini, and Cross-tool.
-    *   `## Context File Details`: Summary of each detected file (lines, sections present).
-    *   `## Hooks`: Status of project and global hooks.
-    *   `## Memory`: Status of memory files and count of entries.
-    *   `## Git`: Branch name, recent activity, or "Not a git repository".
-    *   `## In-Flight State`: List of active issues/PRs or "Skipped".
-    *   `## Stage Signals`: Table of detected signals and a final summary line using the format: **Total signals: {N}**. If N < 3, include a warning about Phase 3 weak-state fallback.
+8.  **Compile scan data internally — do NOT output to user.** Organize gathered data into the following 7 sections in your internal context (never render this block in the response):
+    *   **Detected Agent Platforms:** Status (✅/❌) and files found for Claude Code, Cursor, Gemini, and Cross-tool.
+    *   **Context File Details:** Summary of each detected file (lines, sections present).
+    *   **Hooks:** Status of project and global hooks.
+    *   **Memory:** Status of memory files and count of entries.
+    *   **Git:** Branch name, recent activity, or "Not a git repository".
+    *   **In-Flight State:** List of active issues/PRs or "Skipped".
+    *   **Stage Signals:** Table of detected signals and a final tally: **Total signals: {N}**. If N < 3, note weak-state for Phase 3.
 
-The last content in the scan report body is the anchor line: **→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**
-
-**Transition (mandatory):** Output `---SCAN-REPORT-END---` on one line, then `---DIAGNOSIS-REPORT-START---` on the **immediately next line** — no blank line, no text, no summary between them. Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
+**Transition (mandatory):** Output `---DIAGNOSIS-REPORT-START---` on the line immediately after the status line (no additional text). Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
 
 ### Phase 2 — DIAGNOSE
 
-**Purpose:** Evaluate the Scan Report against 5 dimensions and 4 cross-cutting diagnostics, then emit a structured Diagnosis Report consumed by Phases 3–5. This phase is **read-only** — never write project files here.
+**Purpose:** Evaluate Phase 1 scan data against 5 dimensions and 4 cross-cutting diagnostics, then emit a structured Diagnosis Report consumed by Phases 3–5. This phase is **read-only** — never write project files here.
 
-**Inputs:** The Scan Report emitted in Phase 1.
+**Inputs:** The project data gathered during Phase 1 tool calls (held in context — not rendered to user).
 
 **Procedure:**
 
-1.  **Evaluate the 5 dimensions per detected platform.** For each platform in the Scan Report (Claude Code, Cursor, Gemini, Cross-tool/`AGENTS.md`), assign each dimension one status: `present-good`, `present-weak`, `missing`, or `duplicated`.
+1.  **Evaluate the 5 dimensions per detected platform.** For each platform detected during Phase 1 (Claude Code, Cursor, Gemini, Cross-tool/`AGENTS.md`), assign each dimension one status: `present-good`, `present-weak`, `missing`, or `duplicated`.
     *   **Identity:** Does a context file state what the project IS (purpose + type) in its first lines? Full summary → `present-good`; named but no purpose → `present-weak`; absent → `missing`.
     *   **Workflow:** Are mandatory steps, stage gates, or build/test commands documented? Complete → `present-good`; coding-style-only / partial → `present-weak`; absent → `missing`.
     *   **In-flight:** Does the agent see active work? Dynamic SessionStart `gh` hook → `present-good`; static roadmap or "Current PR/issue" line (goes stale) → `present-weak`; none → `missing`.
@@ -141,11 +142,11 @@ The last content in the scan report body is the anchor line: **→ Scan complete
 
 **Purpose:** Fill the smallest possible gap in understanding by asking the user only what cannot be inferred from the scan.
 
-**Inputs:** The Scan Report and Diagnosis Report.
+**Inputs:** Phase 1 scan data and the Diagnosis Report.
 
 **Procedure:**
 
-1.  **Count usable scan signals.** Calculate the signal count from the Scan Report:
+1.  **Count usable scan signals.** Calculate the signal count from Phase 1 gathered data:
     *   **Context file:** +1 signal for every context file (such as `.cursorrules`, `AGENTS.md`, or `GEMINI.md`) with ≥ 5 lines.
     *   **Hooks:** +1 signal if any project or global hook is detected.
     *   **Memory:** +1 signal if memory count > 0.
@@ -159,7 +160,7 @@ The last content in the scan report body is the anchor line: **→ Scan complete
     *   **If Signal count ≥ 3 (Normal-state):** Inspect the Diagnosis Report for gaps the scan cannot resolve. Ask 0–3 surgical questions. Triggers include:
         *   Multiple platforms detected but no `AGENTS.md`: *Should rules be unified in `AGENTS.md` (cross-tool) or kept per-platform?*
         *   Stage signals score = 1 (ambiguous): *Is this project organized as a sequential workflow (each folder = a stage) or is the numbering coincidental?*
-        *   `gh` not authenticated, or no `gh` hook in a git root (determined by reading the Scan Report's `## In-Flight State` section which shows "Skipped" or "no gh auth" — Phase 3 does NOT re-run `gh` commands): *Do you want dynamic in-flight queries (requires installing `gh`, running `gh auth login`, and being inside a git repository verified via `test -e .git`) or a static roadmap file (you maintain manually)?*
+        *   `gh` not authenticated, or no `gh` hook in a git root (determined from Phase 1 in-flight state data which shows "Skipped" or "no gh auth" — Phase 3 does NOT re-run `gh` commands): *Do you want dynamic in-flight queries (requires installing `gh`, running `gh auth login`, and being inside a git repository verified via `test -e .git`) or a static roadmap file (you maintain manually)?*
         If no gaps exist, skip asking entirely.
 
 3.  **Hard Invariant:** Never re-ask what the scan already answered.
@@ -182,7 +183,7 @@ The last content in the scan report body is the anchor line: **→ Scan complete
 
 **Purpose:** Translate diagnosis into a prioritized, transparent list of proposed changes, expressed in terms of developer productivity (turns saved).
 
-**Inputs:** The Scan Report, Diagnosis Report, and Ask Report.
+**Inputs:** Phase 1 scan data, Diagnosis Report, and Ask Report.
 
 **Procedure:**
 
