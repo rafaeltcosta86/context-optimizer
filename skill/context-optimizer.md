@@ -23,7 +23,7 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 - **Phase 3** — when questions need to be asked: stop and wait for user response
 - **Phase 4** — after emitting recommendations: stop and wait for user approval or feedback
 
-**Phase transition format (mandatory):** Each automatic phase transition outputs the closing delimiter of the current phase and the opening delimiter of the next phase on **consecutive lines — no blank line, no text of any kind between them.** Example: `---SCAN-REPORT-END---` on one line, `---DIAGNOSIS-REPORT-START---` on the very next line. **All internal reports (SCAN, DIAGNOSE, and ASK when no questions are needed) MUST be wrapped in `<thought>` tags to hide them from the user.**
+**Phase transition format (mandatory):** Each automatic phase transition outputs the closing delimiter of the current phase and the opening delimiter of the next phase on **consecutive lines — no blank line, no user-visible text between them.** Example: `---SCAN-REPORT-END---` on one line, `---DIAGNOSIS-REPORT-START---` on the very next line. **All internal reports (SCAN, DIAGNOSE, and ASK when no questions are needed) MUST be wrapped in `<thought>` tags to hide them from the user.**
 
 All other phase transitions are automatic. Begin Phase 1 immediately.
 
@@ -84,7 +84,7 @@ All other phase transitions are automatic. Begin Phase 1 immediately.
 
 The last content in the scan report body is the anchor line: **→ Scan complete. Proceeding to Phase 2 — DIAGNOSE immediately.**
 
-**Transition (mandatory):** Output `---SCAN-REPORT-END---` on one line, then `---DIAGNOSIS-REPORT-START---` on the **immediately next line** — no blank line, no text, no summary between them. Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
+**Transition (mandatory):** Output `---SCAN-REPORT-END---` on one line, then `---DIAGNOSIS-REPORT-START---` on the **immediately next line** — no blank line, no user-visible text, no summary between them. Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
 
 ### Phase 2 — DIAGNOSE
 
@@ -137,7 +137,7 @@ The last content in the scan report body is the anchor line: **→ Scan complete
     **Diagnosis complete.**
     **→ Diagnosis complete. Proceeding to Phase 3 — ASK immediately.**
 
-**Transition (mandatory):** Output `---DIAGNOSIS-REPORT-END---` on one line, then `---ASK-REPORT-START---` on the **immediately next line** — no blank line, no text between them. Begin Phase 3 content on the line after `---ASK-REPORT-START---`.
+**Transition (mandatory):** Output `---DIAGNOSIS-REPORT-END---` on one line, then `---ASK-REPORT-START---` on the **immediately next line** — no blank line, no user-visible text between them. Begin Phase 3 content on the line after `---ASK-REPORT-START---`.
 
 ### Phase 3 — ASK
 
@@ -178,7 +178,7 @@ The last content in the scan report body is the anchor line: **→ Scan complete
     *   If 0 questions were asked, also append the anchor line: **→ Ask complete. Proceeding to Phase 4 — RECOMMEND immediately.**
 
 **Transition:**
-- If 0 questions were asked: output `---ASK-REPORT-END---` on one line, then `---RECOMMEND-REPORT-START---` on the **immediately next line** — no blank line, no text between them.
+- If 0 questions were asked: output `---ASK-REPORT-END---` on one line, then `---RECOMMEND-REPORT-START---` on the **immediately next line** — no blank line, no user-visible text between them.
 - If questions were asked: output `---ASK-REPORT-END---` and pause for user response. After the user responds, begin Phase 4 — RECOMMEND.
 
 ### Phase 4 — RECOMMEND
