@@ -75,6 +75,9 @@ All other phase transitions are automatic. Begin Phase 1 immediately by emitting
     *   **Rule:** Total score ≥ 4 = recommend stage contracts. (Note: strong=3pts, medium=2pts, weak=1pt — this is a weighted score, not a signal count. The weak-state threshold in Step 8 uses raw signal count, a separate metric.)
 
 8.  **Compile scan data internally — do NOT output to user.** Organize gathered data into the following 7 sections in your internal context (never render this block in the response):
+
+    > **CRITICAL:** The scan data is for your internal reasoning only. The old scan report format has been RETIRED. Explicitly, do NOT output `---SCAN-REPORT-START---` or `---SCAN-REPORT-END---` to the user; doing so is a protocol violation.
+
     *   **Detected Agent Platforms:** Status (✅/❌) and files found for Claude Code, Cursor, Gemini, and Cross-tool.
     *   **Context File Details:** Summary of each detected file (lines, sections present).
     *   **Hooks:** Status of project and global hooks.
@@ -83,7 +86,7 @@ All other phase transitions are automatic. Begin Phase 1 immediately by emitting
     *   **In-Flight State:** List of active issues/PRs or "Skipped".
     *   **Stage Signals:** Table of detected signals and a final tally: **Total signals: {N}**. If N < 3, note weak-state for Phase 3.
 
-**Transition (mandatory):** Output `---DIAGNOSIS-REPORT-START---` on the line immediately after the status line (no additional text). Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
+**Transition (mandatory):** The scan report is suppressed. You must output `---DIAGNOSIS-REPORT-START---` on the line immediately following the *Scanning project structure...* status line (with NO intervening user-visible text, blank lines, or retired scan report markers). Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
 
 ### Phase 2 — DIAGNOSE
 
