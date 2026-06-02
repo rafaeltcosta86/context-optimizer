@@ -36,12 +36,25 @@ All other phase transitions are automatic. Begin Phase 1 immediately by emitting
 
 **Procedure:**
 
-1.  **Detect agent configurations.** Glob for `CLAUDE.md`, `.claude/settings.json`, `.cursorrules`, `.cursor/rules/*.mdc`, `GEMINI.md`, `AGENTS.md`, and other agent-specific files.
+1.  **Detect agent configurations.** Glob for the following files and directories. Record what's present, what's missing, and the size of each present file.
+    *   **Claude Code:** `CLAUDE.md` (project root), `.claude/settings.json`, `.claude/settings.local.json`, `.claude/hooks/*`, `~/.claude/projects/<proj>/memory/MEMORY.md`
+    *   **Cross-tool:** `AGENTS.md` (any version)
+    *   **Cursor:** `.cursorrules` (legacy), `.cursor/rules/*.mdc`
+    *   **Gemini CLI / Antigravity:** `GEMINI.md`, `.gemini/config.yaml`, `.gemini/styleguide.md`, `.agent/workflows/*.md`, `.agents/skills/SKILL.md`
+    *   **Global user-level:** `~/.claude/settings.json` (read-only), `~/.claude/hooks/session-start.sh` (read-only)
+    *   **Reference files:** any `*.md` files outside the agent config globs above (e.g. `docs/*.md`, `CONTRIBUTING.md`, `README.md`). Record path and line count; read on demand in Step 2.
 2.  **Read project metadata.** Read detected context files, project manifest (`package.json`, etc.), and the first 30 lines of `README.md`.
 3.  **Gather environmental context.** If `test -e .git` passes, query git branch, log, and status. If `gh` is authenticated, query open issues and PRs.
-4.  **Detect stage signals.** Calculate a weighted score (**Total signals: {N}**) based on numbered folders, `CONTEXT.md` files, and sequential GitHub Actions. If N < 3, trigger weak-state for Phase 3.
+4.  **Detect stage signals.** Apply the multi-signal heuristic to calculate a weighted stage signals score (strong=3pts, medium=2pts, weak=1pt) and a raw scan signal count (**Total signals: {N}**):
+    *   Numbered folders (`01-`, `02-`): weak (1)
+    *   `output/` or `artifacts/` subdirectories: medium (2)
+    *   `CONTEXT.md` files in subdirectories: strong (3)
+    *   GitHub Actions with sequential job dependencies (`needs:` chains): strong (3)
+    *   Labels with stage prefix (`stage:`, `phase:`, `pipeline:`): strong (3)
+    *   README mentions workflow / pipeline / stages: medium (2)
+    *   **Rules:** If the weighted score ≥ 4, recommend stage contracts. If the raw scan signal count N < 3, trigger weak-state for Phase 3.
 
-**Output Rule:** Phase 1 has no user-visible output other than the status line and the Phase 2 opening delimiter. Do NOT output a scan report block.
+**Output Rule:** Phase 1 has no user-visible output other than the status line and the Phase 2 opening delimiter. Do NOT output a Phase 1 report block.
 
 **Transition (mandatory):** Output `---DIAGNOSIS-REPORT-START---` on the line immediately after the status line (no additional text). Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
 
