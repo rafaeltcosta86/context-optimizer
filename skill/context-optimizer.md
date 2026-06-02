@@ -23,13 +23,15 @@ When a developer opens a new Claude Code (or Cursor, or Gemini CLI / Antigravity
 - **Phase 3** — when questions need to be asked: stop and wait for user response
 - **Phase 4** — after emitting recommendations: stop and wait for user approval or feedback
 
-**Phase transition format (mandatory):** Each automatic phase transition outputs the closing delimiter of the current phase and the opening delimiter of the next phase on **consecutive lines — no blank line, no text of any kind between them.** Example: `---SCAN-REPORT-END---` on one line, `---DIAGNOSIS-REPORT-START---` on the very next line.
+**Phase transition format (mandatory):** Each automatic phase transition outputs the closing delimiter of the current phase and the opening delimiter of the next phase on **consecutive lines — no blank line, no text of any kind between them.** Example: `---SCAN-REPORT-END---` on one line, `---DIAGNOSIS-REPORT-START---` on the very next line. **All internal reports (SCAN, DIAGNOSE, and ASK when no questions are needed) MUST be wrapped in `<thought>` tags to hide them from the user.**
 
 All other phase transitions are automatic. Begin Phase 1 immediately.
 
 ### Phase 1 — SCAN
 
 **Purpose:** Build a complete picture of the project's current session-context infrastructure without asking the user anything.
+
+**Visible Output:** Before beginning any tool calls, output exactly one line: `Scanning project structure...`
 
 **Inputs:** The project root directory (assumed to be the working directory at invocation).
 
@@ -71,7 +73,7 @@ All other phase transitions are automatic. Begin Phase 1 immediately.
     *   README mentions workflow / pipeline / stages: medium (2)
     *   **Rule:** Total score ≥ 4 = recommend stage contracts. (Note: strong=3pts, medium=2pts, weak=1pt — this is a weighted score, not a signal count. The weak-state threshold in Step 8 uses raw signal count, a separate metric.)
 
-8.  **Emit the Scan Report.** Produce a structured report delimited by `---SCAN-REPORT-START---` and `---SCAN-REPORT-END---`. The report MUST start with a `# Scan Report — {project name}` header, followed by project metadata (Scanned path, Project type, and Summary), and then these 7 mandatory sections:
+8.  **Emit the Scan Report.** Produce a structured report delimited by `---SCAN-REPORT-START---` and `---SCAN-REPORT-END---`. **Start a `<thought>` block and emit the Scan Report (including delimiters) inside it. Do NOT close the tag yet.** The report MUST start with a `# Scan Report — {project name}` header, followed by project metadata (Scanned path, Project type, and Summary), and then these 7 mandatory sections:
     *   `## Detected Agent Platforms`: Status (✅/❌) and files found for Claude Code, Cursor, Gemini, and Cross-tool.
     *   `## Context File Details`: Summary of each detected file (lines, sections present).
     *   `## Hooks`: Status of project and global hooks.
@@ -122,7 +124,7 @@ The last content in the scan report body is the anchor line: **→ Scan complete
     *   Projected overall score: recompute with all P1+P2 dimensions set to 10 (P3 Duplication unchanged)
     *   Count of distinct P1 dimensions (In-flight, Startup) where at least one platform's score < 8 (dimension-level count, not platform × dimension cell count)
 
-7.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 7 sections in order:
+7.  **Emit the Diagnosis Report.** Produce a block delimited by `---DIAGNOSIS-REPORT-START---` and `---DIAGNOSIS-REPORT-END---`. **Keep this entire block (including delimiters) inside the same `<thought>` block.** Start with `# Diagnosis Report — {project name}`, then two metadata lines: `**Source:** Scan Report for {scanned path}` and `**Status legend:** present-good · present-weak · missing · duplicated`. Then these 7 sections in order:
     *   `## Context Health Score` — `Current: {overall} / 10`, `After recommendations: {projected} / 10 ({delta})`, then a table with columns `Platform | Identity | Workflow | In-flight | Startup | Duplication | Score` (one row per detected platform using per-dimension scores from Step 6, plus a `**Aggregate**` row showing the overall aggregate), then a one-line verdict: `> {N} P1 gaps blocking agent efficiency. Applying top P1+P2 recommendations brings score to {projected}/10.`
     *   `## Dimension Evaluation` — one row per detected platform, columns: `Platform | Identity | Workflow | In-flight | Startup | Duplication`.
     *   `## Layer 3/4 Contamination` — columns `File | Status | Detail`; render `✅ None detected` when clean.
@@ -167,6 +169,7 @@ The last content in the scan report body is the anchor line: **→ Scan complete
 4.  **Hard Invariant:** Never use preference annotations (e.g. "(Recommended)", "(preferred)") in questions or options. All choices must be presented neutrally; the skill's prior is only expressed in Phase 4.
 
 5.  **Emit the Ask Report.** Produce a block delimited by `---ASK-REPORT-START---` and `---ASK-REPORT-END---`.
+    *   **Visibility Rule:** If 0 questions were asked, keep this entire block (including delimiters) inside the `<thought>` block and then close the tag with `</thought>`. If questions were asked, close the `<thought>` tag BEFORE emitting the Ask Report so it is visible to the user.
     *   Start with `# Ask Report — {project name}`.
     *   Include metadata: `**Mode:** weak-state | normal-state` and `**Signal count:** N`.
     *   `## Questions Asked`: List all questions posed to the user (or "None" if skipped).
