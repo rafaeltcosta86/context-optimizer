@@ -2,7 +2,7 @@
 
 # Diagnosis Report — acme-cli
 
-**Source:** Scan Report for `examples/before/diagnose-fixture/`
+**Source:** Phase 1 scan of `examples/before/diagnose-fixture/`
 **Status legend:** present-good · present-weak · missing · duplicated
 
 ---
