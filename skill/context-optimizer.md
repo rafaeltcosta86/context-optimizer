@@ -83,7 +83,9 @@ All other phase transitions are automatic. Begin Phase 1 immediately by emitting
     *   **In-Flight State:** List of active issues/PRs or "Skipped".
     *   **Stage Signals:** Table of detected signals and a final tally: **Total signals: {N}**. If N < 3, note weak-state for Phase 3.
 
-**Transition (mandatory):** Output `---DIAGNOSIS-REPORT-START---` on the line immediately after the status line (no additional text). Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
+    > **CRITICAL — scan report is internal only:** Do NOT output `---SCAN-REPORT-START---`, `---SCAN-REPORT-END---`, or any scan report block. This format has been retired. The scan data lives exclusively in your context; it is never rendered to the user. The ONLY user-visible output from Phase 1 is the `*Scanning project structure...*` status line already emitted. Any output between the status line and `---DIAGNOSIS-REPORT-START---` is a protocol violation.
+
+**Transition (mandatory):** Output `---DIAGNOSIS-REPORT-START---` on the line immediately after the status line (no additional text between them — no scan report, no blank line). Begin Phase 2 content on the line after `---DIAGNOSIS-REPORT-START---`.
 
 ### Phase 2 — DIAGNOSE
 
